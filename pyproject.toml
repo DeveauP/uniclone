@@ -66,6 +66,12 @@ select = ["E", "F", "I", "N", "UP"]
 python_version = "3.11"
 strict = true
 ignore_missing_imports = true
+disable_error_code = ["type-arg", "no-any-return", "no-untyped-call"]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disable_error_code = ["union-attr", "arg-type", "attr-defined", "no-untyped-def"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

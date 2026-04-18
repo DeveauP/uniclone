@@ -1,6 +1,7 @@
 """
 Shared pytest fixtures for UniClone Phase 0 tests.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -44,10 +45,13 @@ def simple_2clone(rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray, np.
     Returns (alt, depth, adj_factor), all shape (400, 1).
     """
     depth = np.full((400, 1), 100, dtype=float)
-    alt = np.concatenate([
-        rng.binomial(100, 0.2, size=(200, 1)),
-        rng.binomial(100, 0.5, size=(200, 1)),
-    ], axis=0).astype(float)
+    alt = np.concatenate(
+        [
+            rng.binomial(100, 0.2, size=(200, 1)),
+            rng.binomial(100, 0.5, size=(200, 1)),
+        ],
+        axis=0,
+    ).astype(float)
     adj = np.ones((400, 1), dtype=float)
     return alt, depth, adj
 
@@ -80,6 +84,7 @@ def quantumclone_v1_config() -> CloneConfig:
 @pytest.fixture
 def binomial_emission(quantumclone_v1_config: CloneConfig) -> object:
     from uniclone.emission.binomial import BinomialEmission
+
     return BinomialEmission(quantumclone_v1_config)
 
 
@@ -95,14 +100,16 @@ def longitudinal_3clone(rng: np.random.Generator) -> tuple[np.ndarray, np.ndarra
     n = 600
     depth = np.full((n, 3), 100, dtype=float)
     alt = np.zeros((n, 3), dtype=float)
-    cells = np.array([
-        [0.7, 0.6, 0.5],
-        [0.4, 0.3, 0.2],
-        [0.2, 0.1, 0.05],
-    ])
+    cells = np.array(
+        [
+            [0.7, 0.6, 0.5],
+            [0.4, 0.3, 0.2],
+            [0.2, 0.1, 0.05],
+        ]
+    )
     for k in range(3):
         for t in range(3):
-            alt[k * 200:(k + 1) * 200, t] = rng.binomial(100, cells[k, t], size=200)
+            alt[k * 200 : (k + 1) * 200, t] = rng.binomial(100, cells[k, t], size=200)
     adj = np.ones((n, 3), dtype=float)
     return alt, depth, adj
 
@@ -118,14 +125,16 @@ def multisample_3clone(rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray
     n = 600
     depth = np.full((n, 2), 100, dtype=float)
     alt = np.zeros((n, 2), dtype=float)
-    cells = np.array([
-        [0.6, 0.5],
-        [0.35, 0.3],
-        [0.15, 0.1],
-    ])
+    cells = np.array(
+        [
+            [0.6, 0.5],
+            [0.35, 0.3],
+            [0.15, 0.1],
+        ]
+    )
     for k in range(3):
         for s in range(2):
-            alt[k * 200:(k + 1) * 200, s] = rng.binomial(100, cells[k, s], size=200)
+            alt[k * 200 : (k + 1) * 200, s] = rng.binomial(100, cells[k, s], size=200)
     adj = np.ones((n, 2), dtype=float)
     return alt, depth, adj
 
@@ -167,14 +176,22 @@ def mini_corpus():
     entries = []
     for _ in range(2):
         feat = rng_fixture.standard_normal(N_FEATURES)
-        for config_name in ["quantumclone_v1", "pyclone_vi", "mobster", "wes_clinical", "wgs_cohort"]:
+        for config_name in [
+            "quantumclone_v1",
+            "pyclone_vi",
+            "mobster",
+            "wes_clinical",
+            "wgs_cohort",
+        ]:
             for sc in SUBCHALLENGES:
-                entries.append(CorpusEntry(
-                    features=feat.copy(),
-                    subchallenge=sc,
-                    config_name=config_name,
-                    score=rng_fixture.uniform(0, 1),
-                ))
+                entries.append(
+                    CorpusEntry(
+                        features=feat.copy(),
+                        subchallenge=sc,
+                        config_name=config_name,
+                        score=rng_fixture.uniform(0, 1),
+                    )
+                )
     return entries
 
 

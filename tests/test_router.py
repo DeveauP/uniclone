@@ -1,4 +1,5 @@
 """Tests for uniclone.router.router — MetaRouter user-facing API."""
+
 from __future__ import annotations
 
 import numpy as np

@@ -17,6 +17,7 @@ Training pipeline for the NeuralTS MetaRouter.
 2. For each remaining tumour, Thompson-sample one config, score it,
    update the Bayesian head, persist the score — one fit per tumour.
 """
+
 from __future__ import annotations
 
 import json
@@ -259,27 +260,34 @@ def _evaluate_config(args: tuple) -> list[CorpusEntry]:
         )
         for sc in SUBCHALLENGES:
             s = score_result(result, tumour_result, sc)
-            entries.append(CorpusEntry(
-                features=feat_vec,
-                subchallenge=sc,
-                config_name=config_name,
-                score=s,
-            ))
+            entries.append(
+                CorpusEntry(
+                    features=feat_vec,
+                    subchallenge=sc,
+                    config_name=config_name,
+                    score=s,
+                )
+            )
     except Exception as exc:
         import logging
         import traceback
 
         logging.getLogger(__name__).warning(
             "Config %s failed (N=%d): %s\n%s",
-            config_name, tumour_result.alt.shape[0], exc, traceback.format_exc(),
+            config_name,
+            tumour_result.alt.shape[0],
+            exc,
+            traceback.format_exc(),
         )
         for sc in SUBCHALLENGES:
-            entries.append(CorpusEntry(
-                features=feat_vec,
-                subchallenge=sc,
-                config_name=config_name,
-                score=0.0,
-            ))
+            entries.append(
+                CorpusEntry(
+                    features=feat_vec,
+                    subchallenge=sc,
+                    config_name=config_name,
+                    score=0.0,
+                )
+            )
 
     return entries
 
@@ -287,6 +295,7 @@ def _evaluate_config(args: tuple) -> list[CorpusEntry]:
 # ---------------------------------------------------------------------------
 # Step 1: Tumour generation (fast — seconds)
 # ---------------------------------------------------------------------------
+
 
 def _save_tumour(tumour: Any, path: Path) -> None:
     """Serialize a QuantumCatResult / BAMSurgeonResult to an .npz file."""
@@ -384,23 +393,13 @@ def generate_tumours(
                 "UNICLONE_BAMSURGEON_REFERENCE). Falling back to QuantumCat.",
                 stacklevel=2,
             )
-            from uniclone.simulate.quantum_cat import (
-                sample_tumour_params,
-            )
-            from uniclone.simulate.quantum_cat import (
-                simulate_quantumcat as _simulate,
-            )
+            from uniclone.simulate.quantum_cat import sample_tumour_params  # type: ignore[assignment]
+            from uniclone.simulate.quantum_cat import simulate_quantumcat as _simulate  # type: ignore[assignment]
     elif simulator == "quantumcat":
-        from uniclone.simulate.quantum_cat import (
-            sample_tumour_params,
-        )
-        from uniclone.simulate.quantum_cat import (
-            simulate_quantumcat as _simulate,
-        )
+        from uniclone.simulate.quantum_cat import sample_tumour_params  # type: ignore[assignment]
+        from uniclone.simulate.quantum_cat import simulate_quantumcat as _simulate  # type: ignore[assignment]
     else:
-        raise ValueError(
-            f"Unknown simulator: {simulator!r}. Use 'bamsurgeon' or 'quantumcat'."
-        )
+        raise ValueError(f"Unknown simulator: {simulator!r}. Use 'bamsurgeon' or 'quantumcat'.")
 
     from uniclone.simulate.quantum_cat import augment_result
 
@@ -412,7 +411,7 @@ def generate_tumours(
         _save_tumour(tumour, out_dir / f"tumour_{idx:06d}.npz")
         idx += 1
         for _ in range(n_augmentations):
-            aug = augment_result(tumour, rng)
+            aug = augment_result(tumour, rng)  # type: ignore[arg-type]
             _save_tumour(aug, out_dir / f"tumour_{idx:06d}.npz")
             idx += 1
 
@@ -458,7 +457,10 @@ def _score_one_config(tumour: Any, config_name: str) -> dict[str, float]:
     except Exception as exc:
         logger.warning(
             "Config %s failed on tumour (N=%d): %s\n%s",
-            config_name, tumour.alt.shape[0], exc, traceback.format_exc(),
+            config_name,
+            tumour.alt.shape[0],
+            exc,
+            traceback.format_exc(),
         )
         for sc in SUBCHALLENGES:
             scores[sc.name] = 0.0
@@ -538,7 +540,7 @@ def score_tumours(
         raise FileNotFoundError(f"No tumour files found in {tumour_dir}")
 
     # --- Load existing scores for resumability ---
-    scores_db: dict[int, dict[str, dict[str, float]]] = {}
+    scores_db: dict[int, dict[str, Any]] = {}
     for score_file in out_dir.glob("scores_*.json"):
         tid = int(score_file.stem.split("_")[1])
         scores_db[tid] = json.loads(score_file.read_text())
@@ -560,18 +562,18 @@ def score_tumours(
         desc = f"Pilot round ({len(pilots)} configs)"
         if n_workers <= 1:
             for args in tqdm(pilot_work, desc=desc, unit="fit"):
-                tid, cfg, sc = _score_tumour_worker(args)
-                scores_db[tid][cfg] = sc
+                tid, cfg, sc_scores = _score_tumour_worker(args)
+                scores_db[tid][cfg] = sc_scores
                 _save_scores(tid)
         else:
             with Pool(n_workers) as pool:
-                for tid, cfg, sc in tqdm(
+                for tid, cfg, sc_scores in tqdm(
                     pool.imap_unordered(_score_tumour_worker, pilot_work),
                     total=len(pilot_work),
                     desc=desc,
                     unit="fit",
                 ):
-                    scores_db[tid][cfg] = sc
+                    scores_db[tid][cfg] = sc_scores
                     _save_scores(tid)
 
     # --- Elimination: decide which remaining configs to score per tumour ---
@@ -589,7 +591,7 @@ def score_tumours(
                 for sc_name, val in sc_scores.items():
                     per_sc_best[sc_name] = max(per_sc_best.get(sc_name, 0.0), val)
             if per_sc_best:
-                best_pilot_avg = np.mean(list(per_sc_best.values()))
+                best_pilot_avg = float(np.mean(list(per_sc_best.values())))
 
         for cfg in remaining_configs:
             if cfg in tumour_scores:
@@ -606,13 +608,10 @@ def score_tumours(
                     if pcfg not in pilots:
                         continue
                     for sc_name, val in sc_scores.items():
-                        per_sc_pilot[sc_name] = max(
-                            per_sc_pilot.get(sc_name, 0.0), val
-                        )
+                        per_sc_pilot[sc_name] = max(per_sc_pilot.get(sc_name, 0.0), val)
                 threshold = 0.5 + elimination_margin
-                all_above = (
-                    len(per_sc_pilot) == len(SUBCHALLENGES)
-                    and all(v > threshold for v in per_sc_pilot.values())
+                all_above = len(per_sc_pilot) == len(SUBCHALLENGES) and all(
+                    v > threshold for v in per_sc_pilot.values()
                 )
                 if all_above:
                     n_eliminated += 1
@@ -620,9 +619,7 @@ def score_tumours(
                     # distinguish elimination from genuine zero scores.
                     if i not in scores_db:
                         scores_db[i] = {}
-                    scores_db[i][cfg] = {
-                        sc.name: 0.0 for sc in SUBCHALLENGES
-                    }
+                    scores_db[i][cfg] = {sc.name: 0.0 for sc in SUBCHALLENGES}
                     scores_db[i][cfg]["_eliminated"] = 1.0
                     continue
             full_work.append((str(tf), cfg, i))
@@ -640,18 +637,18 @@ def score_tumours(
     if full_work:
         if n_workers <= 1:
             for args in tqdm(full_work, desc="Scoring remaining configs", unit="fit"):
-                tid, cfg, sc = _score_tumour_worker(args)
-                scores_db[tid][cfg] = sc
+                tid, cfg, sc_scores = _score_tumour_worker(args)
+                scores_db[tid][cfg] = sc_scores
                 _save_scores(tid)
         else:
             with Pool(n_workers) as pool:
-                for tid, cfg, sc in tqdm(
+                for tid, cfg, sc_scores in tqdm(
                     pool.imap_unordered(_score_tumour_worker, full_work),
                     total=len(full_work),
                     desc="Scoring remaining configs",
                     unit="fit",
                 ):
-                    scores_db[tid][cfg] = sc
+                    scores_db[tid][cfg] = sc_scores
                     _save_scores(tid)
 
     # --- Assemble CorpusEntry list ---
@@ -663,7 +660,9 @@ def score_tumours(
     ):
         tumour = _load_tumour(tf)
         features = extract_meta_features(
-            alt=tumour.alt, depth=tumour.depth, adj_factor=tumour.adj_factor,
+            alt=tumour.alt,
+            depth=tumour.depth,
+            adj_factor=tumour.adj_factor,
         )
         feat_vec = features_to_tensor(features)
 
@@ -676,12 +675,14 @@ def score_tumours(
             if sc_scores.get("_eliminated"):
                 continue
             for sc in SUBCHALLENGES:
-                all_entries.append(CorpusEntry(
-                    features=feat_vec,
-                    subchallenge=sc,
-                    config_name=cfg,
-                    score=sc_scores.get(sc.name, 0.0),
-                ))
+                all_entries.append(
+                    CorpusEntry(
+                        features=feat_vec,
+                        subchallenge=sc,
+                        config_name=cfg,
+                        score=sc_scores.get(sc.name, 0.0),
+                    )
+                )
 
     return all_entries
 
@@ -689,6 +690,7 @@ def score_tumours(
 # ---------------------------------------------------------------------------
 # Convenience wrapper (preserves old API)
 # ---------------------------------------------------------------------------
+
 
 def build_training_corpus(
     n_tumours: int = 10_000,
@@ -739,9 +741,7 @@ def build_training_corpus(
     manifest_path = tumour_dir / "manifest.json"
     if manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
-        tqdm.write(
-            f"Reusing {manifest['n_total']} existing tumours from {tumour_dir}"
-        )
+        tqdm.write(f"Reusing {manifest['n_total']} existing tumours from {tumour_dir}")
     else:
         generate_tumours(
             out_dir=tumour_dir,
@@ -810,8 +810,7 @@ def train_router_detailed(
     ) -> tuple[np.ndarray, np.ndarray]:
         """Build (features, best_config_label) arrays from corpus."""
         sc_data: dict[SubChallenge, dict[str, list]] = {
-            sc: {"features": [], "config_idx": [], "scores": []}
-            for sc in SUBCHALLENGES
+            sc: {"features": [], "config_idx": [], "scores": []} for sc in SUBCHALLENGES
         }
         for entry in corpus:
             ci = CONFIG_NAMES.index(entry.config_name)
@@ -846,8 +845,11 @@ def train_router_detailed(
         encoder = SharedEncoder()
         model = NeuralTSModel(encoder=encoder)
         return TrainResult(
-            model=model, train_losses=[], val_losses=[],
-            n_train=0, n_val=len(val_corpus) if val_corpus else 0,
+            model=model,
+            train_losses=[],
+            val_losses=[],
+            n_train=0,
+            n_val=len(val_corpus) if val_corpus else 0,
         )
 
     X_train = torch.tensor(X_train_np, dtype=torch.float32)
@@ -867,7 +869,8 @@ def train_router_detailed(
     encoder = SharedEncoder()
     classifier_head = nn.Linear(encoder.output_dim, N_CONFIGS)
     optimizer = optim.Adam(
-        list(encoder.parameters()) + list(classifier_head.parameters()), lr=lr,
+        list(encoder.parameters()) + list(classifier_head.parameters()),
+        lr=lr,
     )
     loss_fn = nn.CrossEntropyLoss()
 
@@ -914,7 +917,8 @@ def train_router_detailed(
     encoder.eval()
     if train_corpus:
         all_feats = torch.tensor(
-            np.array([e.features for e in train_corpus]), dtype=torch.float32,
+            np.array([e.features for e in train_corpus]),
+            dtype=torch.float32,
         )
         with torch.no_grad():
             all_z = encoder(all_feats)  # (N, dim)
@@ -956,8 +960,7 @@ def train_router(corpus: list[CorpusEntry]) -> Any:
 
     # Organize corpus by subchallenge
     sc_data: dict[SubChallenge, dict[str, list]] = {
-        sc: {"features": [], "config_idx": [], "scores": []}
-        for sc in SUBCHALLENGES
+        sc: {"features": [], "config_idx": [], "scores": []} for sc in SUBCHALLENGES
     }
 
     for entry in corpus:
@@ -1044,13 +1047,12 @@ def train_router(corpus: list[CorpusEntry]) -> Any:
 
     if corpus:
         all_feats = torch.tensor(
-            np.array([e.features for e in corpus]), dtype=torch.float32,
+            np.array([e.features for e in corpus]),
+            dtype=torch.float32,
         )
         with torch.no_grad():
             all_z = encoder(all_feats)  # (N, dim)
-        for i, entry in enumerate(
-            tqdm(corpus, desc="Initializing Bayesian heads", unit="entry")
-        ):
+        for i, entry in enumerate(tqdm(corpus, desc="Initializing Bayesian heads", unit="entry")):
             ci = CONFIG_NAMES.index(entry.config_name)
             si = SUBCHALLENGES.index(entry.subchallenge)
             model.heads[(ci, si)].update(all_z[i], entry.score)
@@ -1142,7 +1144,6 @@ def train_online(
     if not TORCH_AVAILABLE:
         raise ImportError("Online training requires PyTorch: pip install uniclone[router]")
 
-
     from uniclone.router.meta_features import extract_meta_features, features_to_tensor
     from uniclone.router.neural_ts import NeuralTSModel
 
@@ -1164,12 +1165,13 @@ def train_online(
     if log_dir is not None:
         try:
             from torch.utils.tensorboard import SummaryWriter
+
             tb_writer = SummaryWriter(log_dir=str(log_dir))
         except ImportError:
             import logging
+
             logging.getLogger(__name__).warning(
-                "TensorBoard not available (pip install tensorboard). "
-                "Continuing without logging."
+                "TensorBoard not available (pip install tensorboard). Continuing without logging."
             )
 
     tumour_files = sorted(tumour_dir.glob("tumour_*.npz"))
@@ -1178,7 +1180,7 @@ def train_online(
         raise FileNotFoundError(f"No tumour files found in {tumour_dir}")
 
     # Load existing scores for resumability
-    scores_db: dict[int, dict[str, dict[str, float]]] = {}
+    scores_db: dict[int, dict[str, Any]] = {}
     for score_file in scores_dir.glob("scores_*.json"):
         tid = int(score_file.stem.split("_")[1])
         scores_db[tid] = json.loads(score_file.read_text())
@@ -1211,18 +1213,18 @@ def train_online(
         desc = f"Pilot ({effective_pilot} tumours × {n_active} configs)"
         if n_workers <= 1:
             for args in tqdm(pilot_work, desc=desc, unit="fit"):
-                tid, cfg, sc = _score_tumour_worker(args)
-                scores_db[tid][cfg] = sc
+                tid, cfg, sc_scores = _score_tumour_worker(args)
+                scores_db[tid][cfg] = sc_scores
                 _save_scores(tid)
         else:
             with Pool(n_workers) as pool:
-                for tid, cfg, sc in tqdm(
+                for tid, cfg, sc_scores in tqdm(
                     pool.imap_unordered(_score_tumour_worker, pilot_work),
                     total=len(pilot_work),
                     desc=desc,
                     unit="fit",
                 ):
-                    scores_db[tid][cfg] = sc
+                    scores_db[tid][cfg] = sc_scores
                     _save_scores(tid)
 
     # Assemble pilot corpus, split by tumour into train (80%) / val (20%)
@@ -1236,7 +1238,9 @@ def train_online(
     for i in pilot_indices:
         tumour = _load_tumour(tumour_files[i])
         features = extract_meta_features(
-            alt=tumour.alt, depth=tumour.depth, adj_factor=tumour.adj_factor,
+            alt=tumour.alt,
+            depth=tumour.depth,
+            adj_factor=tumour.adj_factor,
         )
         feat_vec = features_to_tensor(features)
         target = val_entries if i in val_tumours else train_entries
@@ -1275,8 +1279,10 @@ def train_online(
     # are closed-form posteriors (no overfitting risk).
     if val_entries:
         import torch as _torch
+
         _val_feats = _torch.tensor(
-            np.array([e.features for e in val_entries]), dtype=_torch.float32,
+            np.array([e.features for e in val_entries]),
+            dtype=_torch.float32,
         )
         model.encoder.eval()
         with _torch.no_grad():
@@ -1287,9 +1293,9 @@ def train_online(
             model.heads[(ci, si)].update(_val_z[j], entry.score)
 
     tqdm.write(
-        f"Encoder pre-trained: {n_epochs} epochs, "
-        f"final loss={pilot_result.train_losses[-1]:.4f}"
-        if pilot_result.train_losses else "Encoder pre-trained (no data)"
+        f"Encoder pre-trained: {n_epochs} epochs, final loss={pilot_result.train_losses[-1]:.4f}"
+        if pilot_result.train_losses
+        else "Encoder pre-trained (no data)"
     )
 
     # Log encoder pre-training losses to TensorBoard
@@ -1319,7 +1325,9 @@ def train_online(
             # Still update the head from persisted scores
             tumour = _load_tumour(tumour_files[i])
             features = extract_meta_features(
-                alt=tumour.alt, depth=tumour.depth, adj_factor=tumour.adj_factor,
+                alt=tumour.alt,
+                depth=tumour.depth,
+                adj_factor=tumour.adj_factor,
             )
             feat_vec = features_to_tensor(features)
             sc_scores = tumour_scores.get(selected, {})
@@ -1330,14 +1338,16 @@ def train_online(
         # Load tumour and extract features
         tumour = _load_tumour(tumour_files[i])
         features = extract_meta_features(
-            alt=tumour.alt, depth=tumour.depth, adj_factor=tumour.adj_factor,
+            alt=tumour.alt,
+            depth=tumour.depth,
+            adj_factor=tumour.adj_factor,
         )
         feat_vec = features_to_tensor(features)
 
         # Thompson-sample: pick the config with highest sampled reward
         # averaged across subchallenges.  Encode once, reuse for all arms.
         z = model._encode(feat_vec)
-        best_cfg = None
+        best_cfg = active_configs[0]
         best_sampled = -float("inf")
         for cfg_name in active_configs:
             ci = CONFIG_NAMES.index(cfg_name)
@@ -1368,8 +1378,8 @@ def train_online(
         selections.append(best_cfg)
 
         # TensorBoard logging
-        mean_reward = np.mean([sc_scores_dict.get(sc.name, 0.0) for sc in SUBCHALLENGES])
-        _reward_running = 0.99 * _reward_running + 0.01 * mean_reward
+        mean_reward = float(np.mean([sc_scores_dict.get(sc.name, 0.0) for sc in SUBCHALLENGES]))
+        _reward_running = float(0.99 * _reward_running + 0.01 * mean_reward)
         if tb_writer is not None:
             tb_writer.add_scalar("online/reward", mean_reward, n_online_fits)
             tb_writer.add_scalar("online/reward_ema", _reward_running, n_online_fits)
@@ -1391,6 +1401,7 @@ def train_online(
     if tb_writer is not None:
         # Log selection distribution
         from collections import Counter
+
         sel_counts = Counter(selections)
         for cfg_name, count in sel_counts.items():
             tb_writer.add_scalar(f"online/selection/{cfg_name}", count, n_online_fits)
@@ -1455,7 +1466,9 @@ def assemble_corpus(
     ):
         tumour = _load_tumour(tf)
         features = extract_meta_features(
-            alt=tumour.alt, depth=tumour.depth, adj_factor=tumour.adj_factor,
+            alt=tumour.alt,
+            depth=tumour.depth,
+            adj_factor=tumour.adj_factor,
         )
         feat_vec = features_to_tensor(features)
 
@@ -1468,11 +1481,13 @@ def assemble_corpus(
             if sc_scores.get("_eliminated"):
                 continue
             for sc in SUBCHALLENGES:
-                all_entries.append(CorpusEntry(
-                    features=feat_vec,
-                    subchallenge=sc,
-                    config_name=cfg,
-                    score=sc_scores.get(sc.name, 0.0),
-                ))
+                all_entries.append(
+                    CorpusEntry(
+                        features=feat_vec,
+                        subchallenge=sc,
+                        config_name=cfg,
+                        score=sc_scores.get(sc.name, 0.0),
+                    )
+                )
 
     return all_entries

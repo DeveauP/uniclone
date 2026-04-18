@@ -7,6 +7,7 @@ using Neural Thompson Sampling.
 
 Wraps a NeuralTSModel and provides predict/explain/update/scores/uncertainty.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -70,10 +71,7 @@ class MetaRouter:
         features: dict[str, float] | np.ndarray,
     ) -> dict[SubChallenge, str]:
         """Select best config per subchallenge."""
-        return {
-            sc: self._model.select(features, sc, explore=self._explore)
-            for sc in SUBCHALLENGES
-        }
+        return {sc: self._model.select(features, sc, explore=self._explore) for sc in SUBCHALLENGES}
 
     def explain(
         self,

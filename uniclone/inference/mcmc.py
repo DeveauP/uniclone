@@ -14,6 +14,7 @@ References
 
 Status: IMPLEMENTED — Phase 2.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -88,9 +89,7 @@ class MCMCInference:
         with pm.Model() as model:
             # Priors
             pi = pm.Dirichlet("pi", a=np.ones(K), shape=(K,))
-            centers = pm.Uniform(
-                "centers", lower=1e-6, upper=1.0 - 1e-6, shape=(K, n_samples)
-            )
+            centers = pm.Uniform("centers", lower=1e-6, upper=1.0 - 1e-6, shape=(K, n_samples))
 
             # Beta-binomial log-likelihood via pytensor
             # effective_mu[i, k, s] = centers[k, s] * adj_factor[i, s]
@@ -141,9 +140,7 @@ class MCMCInference:
 
         # Single E-step at posterior means to get responsibilities
         log_pi = np.log(np.clip(post_pi, 1e-10, None))
-        log_resp = compute_log_resp(
-            alt, depth, adj_factor, emission, post_centers, log_pi
-        )
+        log_resp = compute_log_resp(alt, depth, adj_factor, emission, post_centers, log_pi)
         resp = softmax_rows(log_resp)
         assignments = resp.argmax(axis=1)
 

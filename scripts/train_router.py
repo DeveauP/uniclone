@@ -10,6 +10,7 @@ Usage::
         --val-frac 0.2 --epochs 50 --batch-size 256 --lr 1e-3 \
         --seed 0 --out data/models/router_v1.pt
 """
+
 from __future__ import annotations
 
 import argparse
@@ -83,9 +84,7 @@ def main() -> None:
     )
 
     # Train
-    print(
-        f"Training: epochs={args.epochs}, batch_size={args.batch_size}, lr={args.lr}"
-    )
+    print(f"Training: epochs={args.epochs}, batch_size={args.batch_size}, lr={args.lr}")
     t0 = time.perf_counter()
     result = train_router_detailed(
         train_corpus=train_corpus,

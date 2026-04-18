@@ -1,6 +1,7 @@
 """
 Tests for CloneConfig, enums, validate(), and CONFIGS presets.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -80,7 +81,8 @@ class TestCloneConfigValidation:
 
     def test_joint_mcmc_with_mcmc_ok(self) -> None:
         cfg = CloneConfig(
-            phylo=PhyloMode.JOINT_MCMC, inference=InferenceEngine.MCMC,
+            phylo=PhyloMode.JOINT_MCMC,
+            inference=InferenceEngine.MCMC,
             k_prior=KPrior.TSSB,
         )
         assert cfg.phylo is PhyloMode.JOINT_MCMC

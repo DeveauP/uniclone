@@ -17,6 +17,7 @@ Noise models (enabled via ``QuantumCatParams.noise``)
 - **Neutral 1/f tail**: low-VAF passenger mutations following a power-law
   distribution (Caravagna et al., *Nature Genetics* 2020 — MOBSTER model).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -60,9 +61,9 @@ _PCAWG_LOG_DEPTH_SIGMA = 0.6
 # Ploidy distribution — mixture: ~60% near-diploid, ~20% tetraploid (WGD),
 # ~20% intermediate / aneuploid
 _PCAWG_PLOIDY_COMPONENTS = [
-    (0.60, 2.0, 0.2),   # (weight, mean, std) — near-diploid
-    (0.20, 3.8, 0.3),   # WGD
-    (0.20, 2.8, 0.5),   # aneuploid
+    (0.60, 2.0, 0.2),  # (weight, mean, std) — near-diploid
+    (0.20, 3.8, 0.3),  # WGD
+    (0.20, 2.8, 0.5),  # aneuploid
 ]
 
 # Fraction CNA-affected loci — Beta(2, 5) → median ~0.25
@@ -78,6 +79,7 @@ _PCAWG_GAP_BETA = 3.0
 # ---------------------------------------------------------------------------
 # Noise configuration
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class NoiseParams:
@@ -105,6 +107,7 @@ class NoiseParams:
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class QuantumCatParams:
     """Parameters for a single synthetic tumour."""
@@ -130,11 +133,11 @@ class QuantumCatParams:
 class QuantumCatResult:
     """Output of a QuantumCat simulation."""
 
-    alt: np.ndarray          # (n_mut, n_samples)
-    depth: np.ndarray        # (n_mut, n_samples)
-    adj_factor: np.ndarray   # (n_mut, n_samples)
+    alt: np.ndarray  # (n_mut, n_samples)
+    depth: np.ndarray  # (n_mut, n_samples)
+    adj_factor: np.ndarray  # (n_mut, n_samples)
     true_assignments: np.ndarray  # (n_mut,)
-    true_centers: np.ndarray      # (n_clones, n_samples)
+    true_centers: np.ndarray  # (n_clones, n_samples)
     true_tree: np.ndarray | None  # (n_clones, n_clones) adjacency or None
     params: QuantumCatParams
 
@@ -142,6 +145,7 @@ class QuantumCatResult:
 # ---------------------------------------------------------------------------
 # Main simulation
 # ---------------------------------------------------------------------------
+
 
 def simulate_quantumcat(params: QuantumCatParams) -> QuantumCatResult:
     """
@@ -217,8 +221,16 @@ def simulate_quantumcat(params: QuantumCatParams) -> QuantumCatResult:
     # --- Neutral 1/f tail ---
     if noise and noise.neutral_tail_frac > 0:
         alt, depth_arr, adj_factor, true_assignments = _add_neutral_tail(
-            alt, depth_arr, adj_factor, true_assignments,
-            N, S, K, params.depth, noise, rng,
+            alt,
+            depth_arr,
+            adj_factor,
+            true_assignments,
+            N,
+            S,
+            K,
+            params.depth,
+            noise,
+            rng,
         )
 
     # --- Tree ---
@@ -240,6 +252,7 @@ def simulate_quantumcat(params: QuantumCatParams) -> QuantumCatResult:
 # ---------------------------------------------------------------------------
 # Parameter sampling — PCAWG-calibrated priors
 # ---------------------------------------------------------------------------
+
 
 def sample_tumour_params(
     rng: np.random.Generator,
@@ -306,10 +319,12 @@ def _sample_noise_params(rng: np.random.Generator) -> NoiseParams:
         gc_bias_strength=float(rng.uniform(0.1, 0.5)),
         strand_bias_prob=float(rng.uniform(0.01, 0.10)),
         strand_bias_magnitude=float(rng.uniform(0.1, 0.5)),
-        neutral_tail_frac=float(rng.choice(
-            [0.0, 0.0, 0.1, 0.2, 0.3],  # ~40% of tumours have no tail
-            p=[0.20, 0.20, 0.25, 0.20, 0.15],
-        )),
+        neutral_tail_frac=float(
+            rng.choice(
+                [0.0, 0.0, 0.1, 0.2, 0.3],  # ~40% of tumours have no tail
+                p=[0.20, 0.20, 0.25, 0.20, 0.15],
+            )
+        ),
         neutral_tail_shape=float(rng.uniform(0.8, 1.5)),
         cn_noise_std=float(rng.uniform(0.01, 0.05)),
     )
@@ -318,6 +333,7 @@ def _sample_noise_params(rng: np.random.Generator) -> NoiseParams:
 # ---------------------------------------------------------------------------
 # Augmentation — perturb an existing result for data multiplication
 # ---------------------------------------------------------------------------
+
 
 def augment_result(
     result: QuantumCatResult,
@@ -358,7 +374,7 @@ def augment_result(
     gc_strength = float(rng.uniform(0.1, 0.5))
     gc_wave = np.sin(np.linspace(0, rng.uniform(2, 8) * np.pi, N))
     for s in range(S):
-        depth_arr[:, s] *= (1.0 + gc_strength * gc_wave)
+        depth_arr[:, s] *= 1.0 + gc_strength * gc_wave
     depth_arr = np.maximum(np.round(depth_arr), 1)
 
     # --- Purity jitter ---
@@ -455,8 +471,12 @@ def augment_result(
 # Private helpers — simulation components
 # ---------------------------------------------------------------------------
 
+
 def _generate_cellularities(
-    K: int, S: int, purity: float, rng: np.random.Generator,
+    K: int,
+    S: int,
+    purity: float,
+    rng: np.random.Generator,
 ) -> np.ndarray:
     """Generate clone cellularities using PCAWG-calibrated spacing."""
     true_centers = np.zeros((K, S), dtype=np.float64)
@@ -477,14 +497,18 @@ def _generate_cellularities(
         else:
             noise = rng.normal(0, 0.05, size=K)
             true_centers[:, s] = np.clip(
-                true_centers[:, 0] + noise, 0.01, purity,
+                true_centers[:, 0] + noise,
+                0.01,
+                purity,
             )
     true_centers[0, :] = purity
     return true_centers
 
 
 def _generate_cn(
-    N: int, S: int, purity: float,
+    N: int,
+    S: int,
+    purity: float,
     cn_profile: np.ndarray | None,
     rng: np.random.Generator,
 ) -> np.ndarray:
@@ -525,7 +549,9 @@ def _generate_cn(
 
 
 def _generate_depth(
-    N: int, S: int, mean_depth: int,
+    N: int,
+    S: int,
+    mean_depth: int,
     noise: NoiseParams | None,
     rng: np.random.Generator,
 ) -> np.ndarray:
@@ -548,7 +574,10 @@ def _generate_depth(
 
 
 def _beta_binomial(
-    n: np.ndarray, p: np.ndarray, rho: float, rng: np.random.Generator,
+    n: np.ndarray,
+    p: np.ndarray,
+    rho: float,
+    rng: np.random.Generator,
 ) -> np.ndarray:
     """
     Sample from Beta-Binomial(n, p, rho) via a two-stage procedure.
@@ -578,8 +607,10 @@ def _beta_binomial(
 
 
 def _apply_strand_bias(
-    alt: np.ndarray, depth: np.ndarray,
-    noise: NoiseParams, rng: np.random.Generator,
+    alt: np.ndarray,
+    depth: np.ndarray,
+    noise: NoiseParams,
+    rng: np.random.Generator,
 ) -> np.ndarray:
     """
     Apply strand bias to a random subset of loci.
@@ -602,16 +633,24 @@ def _apply_strand_bias(
     )
     alt = alt.copy()
     alt[biased_idx] = np.clip(
-        np.round(alt[biased_idx] * bias), 0, depth[biased_idx],
+        np.round(alt[biased_idx] * bias),
+        0,
+        depth[biased_idx],
     )
     return alt
 
 
 def _add_neutral_tail(
-    alt: np.ndarray, depth: np.ndarray, adj_factor: np.ndarray,
+    alt: np.ndarray,
+    depth: np.ndarray,
+    adj_factor: np.ndarray,
     true_assignments: np.ndarray,
-    N: int, S: int, K: int, mean_depth: int,
-    noise: NoiseParams, rng: np.random.Generator,
+    N: int,
+    S: int,
+    K: int,
+    mean_depth: int,
+    noise: NoiseParams,
+    rng: np.random.Generator,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Append neutral 1/f passenger mutations (MOBSTER-style tail).

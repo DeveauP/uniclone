@@ -7,7 +7,10 @@ Gradient-based feature attribution for MetaRouter decisions.
 Uses integrated gradients on the differentiable path
 μᵀ encoder(x) to explain why a particular configuration was selected.
 """
+
 from __future__ import annotations
+
+from typing import Any
 
 import numpy as np
 
@@ -82,9 +85,9 @@ def compute_feature_attribution(
 
 
 def _integrated_gradients(
-    encoder: object,
-    mu: object,
-    x: object,
+    encoder: Any,
+    mu: Any,
+    x: Any,
     n_steps: int,
 ) -> np.ndarray:
     """
@@ -100,15 +103,15 @@ def _integrated_gradients(
     # Accumulate gradients along interpolation path
     grads = torch.zeros_like(x)
 
-    encoder.eval()  # type: ignore[union-attr]
+    encoder.eval()
 
     for alpha in alphas:
         interp = baseline + alpha * (x - baseline)
         interp = interp.detach().requires_grad_(True)
-        z = encoder(interp.unsqueeze(0)).squeeze(0)  # type: ignore[operator]
-        score = mu @ z  # type: ignore[operator]
+        z = encoder(interp.unsqueeze(0)).squeeze(0)
+        score = mu @ z
         score.backward()
-        grads += interp.grad  # type: ignore[operator]
+        grads += interp.grad
 
     # Average and multiply by (x - baseline)
     avg_grads = grads / (n_steps + 1)

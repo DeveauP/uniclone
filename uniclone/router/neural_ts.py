@@ -10,6 +10,7 @@ Architecture:
   posterior updates and Thompson sampling for exploration
 - NeuralTSModel: wraps encoder + 55 heads (11 configs × 5 subchallenges)
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -37,8 +38,7 @@ from uniclone.router.constants import (
 def _require_torch() -> None:
     if not TORCH_AVAILABLE:
         raise ImportError(
-            "Neural Thompson Sampling requires PyTorch. "
-            "Install with: pip install uniclone[router]"
+            "Neural Thompson Sampling requires PyTorch. Install with: pip install uniclone[router]"
         )
 
 
@@ -71,6 +71,14 @@ if TORCH_AVAILABLE:
 
         def forward(self, x: torch.Tensor) -> torch.Tensor:
             return self.net(x)
+
+else:
+
+    class SharedEncoder:  # type: ignore[no-redef]
+        """Stub — raises ImportError when torch is not installed."""
+
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            _require_torch()
 
 
 # ---------------------------------------------------------------------------
@@ -306,10 +314,7 @@ class NeuralTSModel:
         """Return posterior mean score for each config."""
         z = self._encode(features)
         si = self._sc_index(sc)
-        return {
-            name: self.heads[(ci, si)].mean_predict(z)
-            for ci, name in enumerate(CONFIG_NAMES)
-        }
+        return {name: self.heads[(ci, si)].mean_predict(z) for ci, name in enumerate(CONFIG_NAMES)}
 
     def uncertainty(
         self,
@@ -319,10 +324,7 @@ class NeuralTSModel:
         """Return posterior variance for each config."""
         z = self._encode(features)
         si = self._sc_index(sc)
-        return {
-            name: self.heads[(ci, si)].uncertainty(z)
-            for ci, name in enumerate(CONFIG_NAMES)
-        }
+        return {name: self.heads[(ci, si)].uncertainty(z) for ci, name in enumerate(CONFIG_NAMES)}
 
     def save(self, path: str | Path) -> None:
         """Save model to disk."""
@@ -330,10 +332,7 @@ class NeuralTSModel:
         path = Path(path)
         state = {
             "encoder": self.encoder.state_dict(),
-            "heads": {
-                f"{ci}_{si}": head.state_dict()
-                for (ci, si), head in self.heads.items()
-            },
+            "heads": {f"{ci}_{si}": head.state_dict() for (ci, si), head in self.heads.items()},
         }
         torch.save(state, path)
 

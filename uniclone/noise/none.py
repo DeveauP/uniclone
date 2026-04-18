@@ -9,6 +9,7 @@ Both ``preprocess`` and ``postprocess`` are identity operations.
 
 Status: IMPLEMENTED — Phase 0 (trivial).
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

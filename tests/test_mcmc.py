@@ -4,6 +4,7 @@ Tests for MCMCInference.
 All tests are skipped if pymc is not installed.
 Uses small data (50 mutations, 500 draws) for speed.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -71,9 +72,7 @@ class TestMCMC1Clone:
         from uniclone.inference.mcmc import MCMCInference
 
         alt, depth, adj = small_1clone
-        mcmc = MCMCInference(
-            quantumclone_v1_config, n_draws=500, n_tune=200, target_accept=0.8
-        )
+        mcmc = MCMCInference(quantumclone_v1_config, n_draws=500, n_tune=200, target_accept=0.8)
         bic_prior = BICPrior(quantumclone_v1_config, nclone_range=[1])
         centers_init = bic_prior.initialise(1, alt, depth, adj)
         result = mcmc.run(alt, depth, adj, emission, phylo, centers_init, K=1)
@@ -89,9 +88,7 @@ class TestMCMC1Clone:
         from uniclone.inference.mcmc import MCMCInference
 
         alt, depth, adj = small_1clone
-        mcmc = MCMCInference(
-            quantumclone_v1_config, n_draws=500, n_tune=200, target_accept=0.8
-        )
+        mcmc = MCMCInference(quantumclone_v1_config, n_draws=500, n_tune=200, target_accept=0.8)
         bic_prior = BICPrior(quantumclone_v1_config, nclone_range=[1])
         centers_init = bic_prior.initialise(1, alt, depth, adj)
         result = mcmc.run(alt, depth, adj, emission, phylo, centers_init, K=1)
@@ -99,6 +96,4 @@ class TestMCMC1Clone:
         assert np.isfinite(result.log_likelihood)
         assert np.isfinite(result.bic)
         assert result.converged is True
-        np.testing.assert_allclose(
-            result.responsibilities.sum(axis=1), 1.0, atol=1e-10
-        )
+        np.testing.assert_allclose(result.responsibilities.sum(axis=1), 1.0, atol=1e-10)

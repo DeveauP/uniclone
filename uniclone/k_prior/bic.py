@@ -15,6 +15,7 @@ This corresponds to the QuantumClone / FastClone K-selection approach.
 
 Status: IMPLEMENTED — Phase 0.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -40,7 +41,9 @@ class BICPrior:
 
     def __init__(self, config: CloneConfig, nclone_range: list[int] | None = None) -> None:
         self.config = config
-        self.nclone_range: list[int] = nclone_range if nclone_range is not None else list(range(1, 11))
+        self.nclone_range: list[int] = (
+            nclone_range if nclone_range is not None else list(range(1, 11))
+        )
 
     def get_k_schedule(self) -> list[int]:
         """Return the K values to sweep over."""
@@ -61,7 +64,7 @@ class BICPrior:
         """
         vaf = alt.astype(float) / np.maximum(depth.astype(float), 1)
         quantiles = np.linspace(0.0, 1.0, K + 2)[1:-1]  # K interior quantiles
-        centers = np.quantile(vaf, quantiles, axis=0)    # (K, n_samples)
+        centers = np.quantile(vaf, quantiles, axis=0)  # (K, n_samples)
         return np.clip(centers, 1e-6, 1.0 - 1e-6)
 
     def select(self, results: list[CloneResult]) -> CloneResult:

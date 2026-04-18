@@ -19,6 +19,7 @@ UNICLONE_BAMSURGEON_BIN : str, optional
     Directory containing BAMSurgeon scripts (addsnv.py, etc.).
     If unset, they must be on $PATH.
 """
+
 from __future__ import annotations
 
 import os
@@ -35,13 +36,14 @@ try:
 
     PYSAM_AVAILABLE = True
 except ImportError:
-    pysam = None  # type: ignore[assignment]
+    pysam = None
     PYSAM_AVAILABLE = False
 
 
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class BAMSurgeonParams:
@@ -57,7 +59,7 @@ class BAMSurgeonParams:
     seed: int | None = None
 
     # BAMSurgeon-specific
-    normal_bam: str | None = None      # override env var
+    normal_bam: str | None = None  # override env var
     reference_fasta: str | None = None  # override env var
 
     def __post_init__(self) -> None:
@@ -71,11 +73,11 @@ class BAMSurgeonParams:
 class BAMSurgeonResult:
     """Output of a BAMSurgeon simulation — same interface as QuantumCatResult."""
 
-    alt: np.ndarray           # (n_mut, n_samples)
-    depth: np.ndarray         # (n_mut, n_samples)
-    adj_factor: np.ndarray    # (n_mut, n_samples)
+    alt: np.ndarray  # (n_mut, n_samples)
+    depth: np.ndarray  # (n_mut, n_samples)
+    adj_factor: np.ndarray  # (n_mut, n_samples)
     true_assignments: np.ndarray  # (n_mut,)
-    true_centers: np.ndarray      # (n_clones, n_samples)
+    true_centers: np.ndarray  # (n_clones, n_samples)
     true_tree: np.ndarray | None  # (n_clones, n_clones) adjacency or None
     params: BAMSurgeonParams
 
@@ -83,6 +85,7 @@ class BAMSurgeonResult:
 # ---------------------------------------------------------------------------
 # Main simulation entry-point
 # ---------------------------------------------------------------------------
+
 
 def simulate_bamsurgeon(params: BAMSurgeonParams) -> BAMSurgeonResult:
     """
@@ -105,9 +108,7 @@ def simulate_bamsurgeon(params: BAMSurgeonParams) -> BAMSurgeonResult:
     BAMSurgeonResult
     """
     if not PYSAM_AVAILABLE:
-        raise ImportError(
-            "BAMSurgeon wrapper requires pysam: pip install pysam"
-        )
+        raise ImportError("BAMSurgeon wrapper requires pysam: pip install pysam")
 
     normal_bam = _resolve_path(
         params.normal_bam,
@@ -147,7 +148,9 @@ def simulate_bamsurgeon(params: BAMSurgeonParams) -> BAMSurgeonResult:
         else:
             noise = rng.normal(0, 0.05, size=K)
             true_centers[:, s] = np.clip(
-                true_centers[:, 0] + noise, 0.01, params.purity,
+                true_centers[:, 0] + noise,
+                0.01,
+                params.purity,
             )
     true_centers[0, :] = params.purity
 
@@ -191,7 +194,7 @@ def simulate_bamsurgeon(params: BAMSurgeonParams) -> BAMSurgeonResult:
         depth_arr[:, s] = depth_s
 
     # Ensure no zero-depth (same guard as QuantumCat)
-    depth_arr = np.maximum(depth_arr, 1)
+    np.maximum(depth_arr, 1, out=depth_arr)
 
     # ---- 6. Tree (simple linear chain) ------------------------------------
     true_tree = np.zeros((K, K), dtype=int)
@@ -238,6 +241,7 @@ def sample_tumour_params(rng: np.random.Generator) -> BAMSurgeonParams:
 # Availability check
 # ---------------------------------------------------------------------------
 
+
 def is_available() -> bool:
     """Return True if BAMSurgeon and pysam are installed and paths are set."""
     if not PYSAM_AVAILABLE:
@@ -255,6 +259,7 @@ def is_available() -> bool:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _resolve_path(
     explicit: str | None,
     env_var: str,
@@ -263,9 +268,7 @@ def _resolve_path(
     """Resolve a path from explicit value or environment variable."""
     path = explicit or os.environ.get(env_var)
     if not path:
-        raise OSError(
-            f"No {label} path provided. Set {env_var} or pass explicitly."
-        )
+        raise OSError(f"No {label} path provided. Set {env_var} or pass explicitly.")
     if not Path(path).exists():
         raise FileNotFoundError(f"{label} not found: {path}")
     return path
@@ -302,9 +305,7 @@ def _sample_positions(
     """
     fai_path = reference + ".fai"
     if not Path(fai_path).exists():
-        raise FileNotFoundError(
-            f"Reference index not found: {fai_path}. Run samtools faidx."
-        )
+        raise FileNotFoundError(f"Reference index not found: {fai_path}. Run samtools faidx.")
 
     # Parse .fai → list of (chrom, length)
     chroms: list[tuple[str, int]] = []
@@ -387,16 +388,26 @@ def _run_spike_and_count(
         seed_val = int(rng.integers(0, 2**31))
 
         cmd = [
-            "python", addsnv,
-            "--varfile", var_file,
-            "--bamfile", normal_bam,
-            "--reference", reference,
-            "--outbam", out_bam,
-            "--seed", str(seed_val),
-            "--mindepth", "1",
-            "--maxdepth", "10000",
-            "--aligner", "mem",
-            "--picardjar", _find_picard_jar(),
+            "python",
+            addsnv,
+            "--varfile",
+            var_file,
+            "--bamfile",
+            normal_bam,
+            "--reference",
+            reference,
+            "--outbam",
+            out_bam,
+            "--seed",
+            str(seed_val),
+            "--mindepth",
+            "1",
+            "--maxdepth",
+            "10000",
+            "--aligner",
+            "mem",
+            "--picardjar",
+            _find_picard_jar(),
         ]
 
         result = subprocess.run(
@@ -407,8 +418,7 @@ def _run_spike_and_count(
         )
         if result.returncode != 0:
             raise RuntimeError(
-                f"BAMSurgeon addsnv.py failed (rc={result.returncode}):\n"
-                f"{result.stderr[:2000]}"
+                f"BAMSurgeon addsnv.py failed (rc={result.returncode}):\n{result.stderr[:2000]}"
             )
 
         # Index the output BAM
@@ -445,7 +455,11 @@ def _count_alleles(
 
     # pysam uses 0-based coordinates
     for pileup_col in samfile.pileup(
-        chrom, pos - 1, pos, min_base_quality=0, truncate=True,
+        chrom,
+        pos - 1,
+        pos,
+        min_base_quality=0,
+        truncate=True,
     ):
         if pileup_col.reference_pos == pos - 1:
             for read in pileup_col.pileups:
@@ -466,10 +480,10 @@ def _find_picard_jar() -> str:
     if env_path and Path(env_path).exists():
         return env_path
 
-    common = [
+    common: list[str] = [
         "/usr/local/share/picard/picard.jar",
         "/usr/share/picard/picard.jar",
-        Path.home() / "picard.jar",
+        str(Path.home() / "picard.jar"),
     ]
     for p in common:
         if Path(p).exists():

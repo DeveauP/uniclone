@@ -20,6 +20,7 @@ References
 
 Status: IMPLEMENTED — Phase 1.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -73,30 +74,19 @@ class BBParetoEmission:
         beta_bb = (1.0 - mu_clipped) * phi
 
         # --- Beta-Binomial component (per sample) ---
-        log_binom_coef = (
-            B.gammaln(depth + 1)
-            - B.gammaln(alt + 1)
-            - B.gammaln(depth - alt + 1)
-        )
+        log_binom_coef = B.gammaln(depth + 1) - B.gammaln(alt + 1) - B.gammaln(depth - alt + 1)
         log_beta_num = (
             B.gammaln(alt + alpha_bb)
             + B.gammaln(depth - alt + beta_bb)
             - B.gammaln(depth + alpha_bb + beta_bb)
         )
-        log_beta_den = (
-            B.gammaln(alpha_bb)
-            + B.gammaln(beta_bb)
-            - B.gammaln(alpha_bb + beta_bb)
-        )
+        log_beta_den = B.gammaln(alpha_bb) + B.gammaln(beta_bb) - B.gammaln(alpha_bb + beta_bb)
         log_bb = log_binom_coef + log_beta_num - log_beta_den
 
         # --- Pareto component (per sample) ---
         # f(x) = (alpha - 1) * x^{-alpha} for x = alt/depth (VAF)
         vaf = B.clip(alt / B.maximum(depth, 1.0), 1e-10, 1.0)
-        log_pareto = (
-            B.log(_PARETO_ALPHA - 1.0)
-            - _PARETO_ALPHA * B.log(vaf)
-        )
+        log_pareto = B.log(_PARETO_ALPHA - 1.0) - _PARETO_ALPHA * B.log(vaf)
 
         # --- Mixture in log-space (per sample) ---
         log_mix = B.logaddexp(
@@ -104,4 +94,4 @@ class BBParetoEmission:
             B.log(tau) + log_pareto,
         )
 
-        return log_mix.sum(axis=-1)  # type: ignore[no-any-return]
+        return log_mix.sum(axis=-1)

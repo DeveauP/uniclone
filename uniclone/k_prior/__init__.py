@@ -5,6 +5,7 @@ uniclone.k_prior
 K-prior module registry.  Maps ``KPrior`` enum values to their
 implementing classes.
 """
+
 from __future__ import annotations
 
 from uniclone.core.config import KPrior

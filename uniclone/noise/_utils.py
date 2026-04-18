@@ -4,6 +4,7 @@ uniclone.noise._utils
 
 Shared utilities for noise modules.
 """
+
 from __future__ import annotations
 
 import numpy as np

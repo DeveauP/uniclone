@@ -2,6 +2,7 @@
 Tests for noise modules: TailFilterNoise, ArtefactNoise, MultiplicityNoise,
 and the shared expand_result utility.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -24,6 +25,7 @@ from uniclone.noise.tail_filter import TailFilterNoise
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_config(**overrides) -> CloneConfig:
     """Create a CloneConfig with sensible defaults for noise testing."""
@@ -60,6 +62,7 @@ def _make_result(n_mut: int, K: int, n_samples: int = 1) -> CloneResult:
 # ---------------------------------------------------------------------------
 # expand_result tests
 # ---------------------------------------------------------------------------
+
 
 class TestExpandResult:
     def test_expand_identity(self) -> None:
@@ -99,6 +102,7 @@ class TestExpandResult:
 # ---------------------------------------------------------------------------
 # TailFilterNoise tests
 # ---------------------------------------------------------------------------
+
 
 class TestTailFilterNoise:
     def test_instantiation(self) -> None:
@@ -206,6 +210,7 @@ class TestTailFilterNoise:
 # ArtefactNoise tests
 # ---------------------------------------------------------------------------
 
+
 class TestArtefactNoise:
     def test_instantiation(self) -> None:
         config = _make_config(noise=NoiseModel.ARTEFACT, artefact_absence_threshold=0.05)
@@ -250,11 +255,13 @@ class TestArtefactNoise:
         config = _make_config(artefact_absence_threshold=0.05)
         an = ArtefactNoise(config)
         result = _make_result(60, 3, n_samples=2)
-        result.centers = np.array([
-            [0.6, 0.5],   # present in both (clonal)
-            [0.3, 0.01],  # present in sample 0 only → subset of cluster 0
-            [0.01, 0.3],  # present in sample 1 only → subset of cluster 0
-        ])
+        result.centers = np.array(
+            [
+                [0.6, 0.5],  # present in both (clonal)
+                [0.3, 0.01],  # present in sample 0 only → subset of cluster 0
+                [0.01, 0.3],  # present in sample 1 only → subset of cluster 0
+            ]
+        )
         mask = np.ones(60, dtype=bool)
         out = an.postprocess(result, mask)
         # All nestable with the clonal cluster → no artefacts
@@ -270,11 +277,13 @@ class TestArtefactNoise:
         # Cluster 1: [T, F, F] — subset of cluster 0 → nestable
         # Cluster 2: [F, T, T] — not subset/superset of 0 or 1 → artefact
         result = _make_result(60, 3, n_samples=3)
-        result.centers = np.array([
-            [0.3, 0.3, 0.01],   # present in samples 0, 1
-            [0.2, 0.01, 0.01],  # present in sample 0 only (subset of cluster 0)
-            [0.01, 0.2, 0.2],   # present in samples 1, 2 (not nestable with 0 or 1)
-        ])
+        result.centers = np.array(
+            [
+                [0.3, 0.3, 0.01],  # present in samples 0, 1
+                [0.2, 0.01, 0.01],  # present in sample 0 only (subset of cluster 0)
+                [0.01, 0.2, 0.2],  # present in samples 1, 2 (not nestable with 0 or 1)
+            ]
+        )
         result.assignments[:20] = 0
         result.assignments[20:40] = 1
         result.assignments[40:] = 2
@@ -288,11 +297,13 @@ class TestArtefactNoise:
         config = _make_config(artefact_absence_threshold=0.05)
         an = ArtefactNoise(config)
         result = _make_result(30, 3, n_samples=3)
-        result.centers = np.array([
-            [0.3, 0.3, 0.01],   # valid (nestable with cluster 1)
-            [0.2, 0.01, 0.01],  # valid (nestable with cluster 0)
-            [0.01, 0.2, 0.2],   # artefact
-        ])
+        result.centers = np.array(
+            [
+                [0.3, 0.3, 0.01],  # valid (nestable with cluster 1)
+                [0.2, 0.01, 0.01],  # valid (nestable with cluster 0)
+                [0.01, 0.2, 0.2],  # artefact
+            ]
+        )
         result.assignments[:10] = 0
         result.assignments[10:20] = 1
         result.assignments[20:] = 2
@@ -308,10 +319,12 @@ class TestArtefactNoise:
         an = ArtefactNoise(config)
         result = _make_result(20, 2, n_samples=2)
         # Neither is subset of the other → both artefacts
-        result.centers = np.array([
-            [0.3, 0.01],
-            [0.01, 0.3],
-        ])
+        result.centers = np.array(
+            [
+                [0.3, 0.01],
+                [0.01, 0.3],
+            ]
+        )
         orig_assignments = result.assignments.copy()
         mask = np.ones(20, dtype=bool)
         out = an.postprocess(result, mask)
@@ -322,6 +335,7 @@ class TestArtefactNoise:
 # ---------------------------------------------------------------------------
 # MultiplicityNoise tests
 # ---------------------------------------------------------------------------
+
 
 class TestMultiplicityNoise:
     def test_instantiation(self) -> None:
@@ -418,16 +432,21 @@ class TestMultiplicityNoise:
 # Protocol compliance
 # ---------------------------------------------------------------------------
 
+
 class TestNoiseModuleProtocol:
     """All three modules satisfy the NoiseModule protocol."""
 
-    @pytest.mark.parametrize("cls,kw", [
-        (TailFilterNoise, {}),
-        (ArtefactNoise, {}),
-        (MultiplicityNoise, {}),
-    ])
+    @pytest.mark.parametrize(
+        "cls,kw",
+        [
+            (TailFilterNoise, {}),
+            (ArtefactNoise, {}),
+            (MultiplicityNoise, {}),
+        ],
+    )
     def test_protocol_compliance(self, cls, kw) -> None:
         from uniclone.core.types import NoiseModule
+
         config = _make_config()
         obj = cls(config, **kw)
         assert isinstance(obj, NoiseModule)
@@ -437,11 +456,13 @@ class TestNoiseModuleProtocol:
 # Integration: GenerativeModel with noise configs
 # ---------------------------------------------------------------------------
 
+
 class TestNoiseIntegration:
     """Verify that noise-enabled configs can construct and run GenerativeModel."""
 
     def test_mobster_config_runs(self) -> None:
         from uniclone import CONFIGS, GenerativeModel
+
         model = GenerativeModel(CONFIGS["mobster"])
         rng = np.random.default_rng(42)
         alt = rng.binomial(100, 0.3, size=(100, 1)).astype(float)
@@ -452,6 +473,7 @@ class TestNoiseIntegration:
 
     def test_conipher_config_runs(self) -> None:
         from uniclone import CONFIGS, GenerativeModel
+
         model = GenerativeModel(CONFIGS["conipher_style"])
         rng = np.random.default_rng(42)
         alt = rng.binomial(100, 0.3, size=(100, 1)).astype(float)
@@ -461,6 +483,7 @@ class TestNoiseIntegration:
 
     def test_decifer_config_runs(self) -> None:
         from uniclone import CONFIGS, GenerativeModel
+
         model = GenerativeModel(CONFIGS["decifer_style"])
         rng = np.random.default_rng(42)
         alt = rng.binomial(100, 0.3, size=(100, 1)).astype(float)
@@ -470,6 +493,7 @@ class TestNoiseIntegration:
 
     def test_wes_clinical_config_runs(self) -> None:
         from uniclone import CONFIGS, GenerativeModel
+
         model = GenerativeModel(CONFIGS["wes_clinical"])
         rng = np.random.default_rng(42)
         alt = rng.binomial(100, 0.3, size=(100, 1)).astype(float)
@@ -479,6 +503,7 @@ class TestNoiseIntegration:
 
     def test_model_fit_with_cn_state(self) -> None:
         from uniclone import CONFIGS, GenerativeModel
+
         model = GenerativeModel(CONFIGS["decifer_style"])
         rng = np.random.default_rng(42)
         alt = rng.binomial(100, 0.3, size=(50, 1)).astype(float)

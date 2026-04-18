@@ -4,6 +4,7 @@ Tests for EM-MFVI parity.
 With a very large alpha0 (flat Dirichlet), MFVI should reduce to EM and
 produce near-identical centers.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -50,9 +51,7 @@ class TestEMMFVIParity:
         mfvi = MFVIInference(quantumclone_v1_config, alpha0=1e6)
         mfvi_result = mfvi.run(alt, depth, adj, emission, phylo, centers_init, K=1)
 
-        np.testing.assert_allclose(
-            em_result.centers, mfvi_result.centers, atol=0.02
-        )
+        np.testing.assert_allclose(em_result.centers, mfvi_result.centers, atol=0.02)
 
     def test_2clone_parity(
         self,

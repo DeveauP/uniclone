@@ -1,4 +1,5 @@
 """uniclone.viz.dashboard — Interactive Dash dashboard (Phase 7, optional)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -12,9 +13,7 @@ def _require_dash() -> None:
     try:
         import dash  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "Dashboard requires dash: pip install uniclone[dashboard]"
-        ) from None
+        raise ImportError("Dashboard requires dash: pip install uniclone[dashboard]") from None
 
 
 def create_dashboard(
@@ -51,43 +50,68 @@ def create_dashboard(
     if alt is not None and depth is not None:
         from uniclone.viz.cellularity import cellularity_scatter, vaf_histogram
 
-        cellularity_children.append(dcc.Graph(
-            figure=vaf_histogram(alt, depth, result),
-        ))
-        cellularity_children.append(dcc.Graph(
-            figure=cellularity_scatter(alt, depth, result),
-        ))
-    cellularity_children.append(dcc.Graph(
-        figure=multi_sample_comparison(result, sample_labels=sample_labels),
-    ))
-    cellularity_children.append(dcc.Graph(
-        figure=responsibility_heatmap(result),
-    ))
+        cellularity_children.append(
+            dcc.Graph(
+                figure=vaf_histogram(alt, depth, result),
+            )
+        )
+        cellularity_children.append(
+            dcc.Graph(
+                figure=cellularity_scatter(alt, depth, result),
+            )
+        )
+    cellularity_children.append(
+        dcc.Graph(
+            figure=multi_sample_comparison(result, sample_labels=sample_labels),
+        )
+    )
+    cellularity_children.append(
+        dcc.Graph(
+            figure=responsibility_heatmap(result),
+        )
+    )
     tabs.append(dcc.Tab(label="Cellularity", children=cellularity_children))
 
     # Evolution tab
-    tabs.append(dcc.Tab(label="Evolution", children=[
-        dcc.Graph(figure=fish_plot(result, sample_labels=sample_labels)),
-        dcc.Graph(figure=clone_proportion_bar(result, sample_labels=sample_labels)),
-    ]))
+    tabs.append(
+        dcc.Tab(
+            label="Evolution",
+            children=[
+                dcc.Graph(figure=fish_plot(result, sample_labels=sample_labels)),
+                dcc.Graph(figure=clone_proportion_bar(result, sample_labels=sample_labels)),
+            ],
+        )
+    )
 
     # Tree tab
     if result.tree is not None:
         from uniclone.viz.phylo_tree import clone_tree
 
-        tabs.append(dcc.Tab(label="Tree", children=[
-            dcc.Graph(figure=clone_tree(result)),
-        ]))
+        tabs.append(
+            dcc.Tab(
+                label="Tree",
+                children=[
+                    dcc.Graph(figure=clone_tree(result)),
+                ],
+            )
+        )
 
     # Diagnostics tab
-    tabs.append(dcc.Tab(label="Diagnostics", children=[
-        dcc.Graph(figure=responsibility_distribution(result)),
-    ]))
+    tabs.append(
+        dcc.Tab(
+            label="Diagnostics",
+            children=[
+                dcc.Graph(figure=responsibility_distribution(result)),
+            ],
+        )
+    )
 
-    app.layout = html.Div([
-        html.H1("UniClone Dashboard"),
-        dcc.Tabs(children=tabs),
-    ])
+    app.layout = html.Div(
+        [
+            html.H1("UniClone Dashboard"),
+            dcc.Tabs(children=tabs),
+        ]
+    )
 
     return app
 

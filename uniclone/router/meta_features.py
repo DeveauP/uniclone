@@ -7,6 +7,7 @@ Extract ~21 scalar meta-features from tumour data for MetaRouter routing.
 Features are computable in ~1 second before running any reconstruction
 and are used by the MetaRouter to select the best configuration.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -206,9 +207,7 @@ def _estimate_purity(ccf: np.ndarray) -> float:
         return float(np.median(clonal))
 
 
-def _extract_cn_features(
-    adj_factor: np.ndarray, cn_df: object | None
-) -> dict[str, float]:
+def _extract_cn_features(adj_factor: np.ndarray, cn_df: object | None) -> dict[str, float]:
     """Extract copy-number landscape features."""
     # Infer CN state from adj_factor: adj ≈ 2 / (purity * CN + (1-purity) * 2)
     # For diploid CN=2, adj=1.0

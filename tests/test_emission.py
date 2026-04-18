@@ -4,6 +4,7 @@ Tests for emission modules.
 Validates correctness against scipy reference implementations, edge cases,
 multi-sample behaviour, and cross-module consistency.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,6 +30,7 @@ from uniclone.emission.dcf import DCFBBEmission
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture
 def emission() -> BinomialEmission:
     return BinomialEmission(CONFIGS["quantumclone_v1"])
@@ -53,6 +55,7 @@ def dcf_emission() -> DCFBBEmission:
 # Binomial tests
 # ---------------------------------------------------------------------------
 
+
 class TestBinomialLogProb:
     def test_single_value_matches_scipy(self, emission: BinomialEmission) -> None:
         alt = np.array([[10.0]])
@@ -62,15 +65,18 @@ class TestBinomialLogProb:
         expected = binom.logpmf(10, 50, 0.3)
         np.testing.assert_allclose(result[0], expected, rtol=1e-6)
 
-    @pytest.mark.parametrize("k,n,p", [
-        (0, 50, 0.3),
-        (10, 50, 0.3),
-        (25, 50, 0.5),
-        (50, 50, 0.9),
-        (1, 100, 0.01),
-        (99, 100, 0.99),
-        (50, 100, 0.5),
-    ])
+    @pytest.mark.parametrize(
+        "k,n,p",
+        [
+            (0, 50, 0.3),
+            (10, 50, 0.3),
+            (25, 50, 0.5),
+            (50, 50, 0.9),
+            (1, 100, 0.01),
+            (99, 100, 0.99),
+            (50, 100, 0.5),
+        ],
+    )
     def test_matches_scipy_parametrize(
         self, emission: BinomialEmission, k: int, n: int, p: float
     ) -> None:
@@ -170,18 +176,20 @@ class TestBinomialLogProb:
 # Beta-Binomial tests
 # ---------------------------------------------------------------------------
 
+
 class TestBetaBinomialLogProb:
-    @pytest.mark.parametrize("k,n,mu_val,phi", [
-        (10, 50, 0.3, 50.0),
-        (0, 50, 0.3, 50.0),
-        (50, 50, 0.9, 100.0),
-        (25, 100, 0.5, 200.0),
-        (1, 100, 0.01, 30.0),
-        (5, 20, 0.4, 10.0),
-    ])
-    def test_matches_scipy_betabinom(
-        self, k: int, n: int, mu_val: float, phi: float
-    ) -> None:
+    @pytest.mark.parametrize(
+        "k,n,mu_val,phi",
+        [
+            (10, 50, 0.3, 50.0),
+            (0, 50, 0.3, 50.0),
+            (50, 50, 0.9, 100.0),
+            (25, 100, 0.5, 200.0),
+            (1, 100, 0.01, 30.0),
+            (5, 20, 0.4, 10.0),
+        ],
+    )
+    def test_matches_scipy_betabinom(self, k: int, n: int, mu_val: float, phi: float) -> None:
         """Validate against scipy.stats.betabinom.logpmf."""
         config = CloneConfig(
             emission=EmissionModel.BETA_BINOMIAL,
@@ -292,6 +300,7 @@ class TestBetaBinomialLogProb:
 # BB + Pareto tests
 # ---------------------------------------------------------------------------
 
+
 class TestBBParetoLogProb:
     def test_small_tau_close_to_beta_binomial(self) -> None:
         """With tau very small, BB+Pareto should be close to pure BB.
@@ -399,6 +408,7 @@ class TestBBParetoLogProb:
 # DCF Beta-Binomial tests
 # ---------------------------------------------------------------------------
 
+
 class TestDCFBBLogProb:
     def test_matches_beta_binomial(self) -> None:
         """DCFBBEmission should produce identical results to BetaBinomialEmission."""
@@ -448,6 +458,7 @@ class TestDCFBBLogProb:
 # ---------------------------------------------------------------------------
 # Protocol compliance
 # ---------------------------------------------------------------------------
+
 
 class TestProtocolCompliance:
     def test_binomial_is_emission_module(self) -> None:

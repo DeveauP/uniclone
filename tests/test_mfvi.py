@@ -4,6 +4,7 @@ Tests for MFVIInference.
 Covers: 1-clone and 2-clone center recovery, convergence, shapes,
 responsibilities sum to 1, ELBO is finite, Dirichlet pruning.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -114,9 +115,7 @@ class TestMFVIResponsibilities:
         bic_prior = BICPrior(quantumclone_v1_config, nclone_range=[1])
         centers_init = bic_prior.initialise(1, alt, depth, adj)
         result = mfvi.run(alt, depth, adj, emission, phylo, centers_init, K=1)
-        np.testing.assert_allclose(
-            result.responsibilities.sum(axis=1), 1.0, atol=1e-10
-        )
+        np.testing.assert_allclose(result.responsibilities.sum(axis=1), 1.0, atol=1e-10)
 
 
 class TestMFVILogLikelihood:
@@ -159,9 +158,7 @@ class TestMFVIDirichletPruning:
     ) -> None:
         """With alpha0=0.001 and K=5 on 2-clone data, effective K should be 2."""
         alt, depth, adj = simple_2clone
-        mfvi_sparse = MFVIInference(
-            quantumclone_v1_config, alpha0=0.001, max_iter=200
-        )
+        mfvi_sparse = MFVIInference(quantumclone_v1_config, alpha0=0.001, max_iter=200)
         bic_prior = BICPrior(quantumclone_v1_config, nclone_range=[5])
         centers_init = bic_prior.initialise(5, alt, depth, adj)
         result = mfvi_sparse.run(alt, depth, adj, emission, phylo, centers_init, K=5)

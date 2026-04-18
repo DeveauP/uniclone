@@ -4,6 +4,7 @@ Tests for EMInference.
 Covers: 1-clone and 2-clone centre recovery, BIC K selection,
 log-likelihood monotonicity, and convergence flag.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -98,9 +99,7 @@ class TestEMInference1Clone:
         bic_prior = BICPrior(quantumclone_v1_config, nclone_range=[1])
         centers_init = bic_prior.initialise(1, alt, depth, adj)
         result = em.run(alt, depth, adj, emission, phylo, centers_init, K=1)
-        np.testing.assert_allclose(
-            result.responsibilities.sum(axis=1), 1.0, atol=1e-10
-        )
+        np.testing.assert_allclose(result.responsibilities.sum(axis=1), 1.0, atol=1e-10)
 
 
 class TestEMInference2Clone:

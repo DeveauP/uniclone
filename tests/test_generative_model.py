@@ -4,6 +4,7 @@ Tests for GenerativeModel end-to-end pipeline.
 Covers: quantumclone_v1 runs successfully, stub configs raise NotImplementedError,
 CloneResult has all required fields, multi-sample inputs work.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -89,6 +90,7 @@ class TestGenerativeModelQuantumcloneV1:
         assert result.tree is not None
         K = result.K
         from uniclone.phylo.tree_utils import TreeResult
+
         assert isinstance(result.tree, TreeResult)
         assert result.tree.is_included.shape == (K, K)
         assert result.tree.adjacency.shape == (K, K)
@@ -142,6 +144,7 @@ class TestGenerativeModelStubsRaise:
         """phyloclone_style requires PyMC (MCMC) which may not be installed."""
         try:
             import pymc  # noqa: F401
+
             pytest.skip("pymc is installed — ImportError cannot be triggered")
         except ImportError:
             pass
@@ -162,8 +165,16 @@ class TestGenerativeModelResultFields:
     ) -> None:
         alt, depth, adj = simple_1clone
         result = GenerativeModel(CONFIGS["quantumclone_v1"]).fit(alt, depth, adj)
-        required = ["centers", "assignments", "responsibilities",
-                    "log_likelihood", "bic", "K", "n_iter", "converged"]
+        required = [
+            "centers",
+            "assignments",
+            "responsibilities",
+            "log_likelihood",
+            "bic",
+            "K",
+            "n_iter",
+            "converged",
+        ]
         for field in required:
             assert hasattr(result, field), f"CloneResult missing field: {field}"
 

@@ -27,6 +27,7 @@ Lower BIC = better model.  ``BICPrior.select`` minimises BIC.
 
 Status: IMPLEMENTED — Phase 0.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -94,9 +95,7 @@ class EMInference:
 
         for n_iter in range(1, self.max_iter + 1):
             # --- E-step ---
-            log_resp = compute_log_resp(
-                alt, depth, adj_factor, emission, centers, log_pi
-            )
+            log_resp = compute_log_resp(alt, depth, adj_factor, emission, centers, log_pi)
             resp = softmax_rows(log_resp)
 
             # --- M-step (centers and mixing weights) ---

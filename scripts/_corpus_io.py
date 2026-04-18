@@ -13,6 +13,7 @@ NPZ arrays:
 JSON sidecar (.meta.json):
     CONFIG_NAMES, SUBCHALLENGES, FEATURE_NAMES, n_entries, timestamp, extras
 """
+
 from __future__ import annotations
 
 import json

@@ -15,6 +15,7 @@ so there is zero behaviour change unless the user explicitly calls::
     from uniclone import set_backend
     set_backend("torch")   # or "auto"
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -31,22 +32,26 @@ class _NumpyBackend:
 
     @staticmethod
     def gammaln(x: Any) -> Any:
-        from scipy.special import gammaln  # type: ignore[import-untyped]
+        from scipy.special import gammaln
+
         return gammaln(x)
 
     @staticmethod
     def digamma(x: Any) -> Any:
-        from scipy.special import digamma  # type: ignore[import-untyped]
+        from scipy.special import digamma
+
         return digamma(x)
 
     @staticmethod
     def xlogy(x: Any, y: Any) -> Any:
-        from scipy.special import xlogy  # type: ignore[import-untyped]
+        from scipy.special import xlogy
+
         return xlogy(x, y)
 
     @staticmethod
     def logsumexp(a: Any, axis: int | None = None) -> Any:
-        from scipy.special import logsumexp  # type: ignore[import-untyped]
+        from scipy.special import logsumexp
+
         return logsumexp(a, axis=axis)
 
     # --- elementwise ---
@@ -101,6 +106,7 @@ class _TorchBackend:
 
     def __init__(self, device: str = "auto") -> None:
         import torch
+
         self._torch = torch
         if device == "auto":
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

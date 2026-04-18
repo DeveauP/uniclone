@@ -1,4 +1,5 @@
 """uniclone.viz.diagnostics — Diagnostic plots for EM/MFVI convergence (Phase 7)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -28,22 +29,26 @@ def bic_curve(
     ks_sorted = [ks[i] for i in order]
     bics_sorted = [bics[i] for i in order]
 
-    fig = go.Figure(go.Scatter(
-        x=ks_sorted,
-        y=bics_sorted,
-        mode="lines+markers",
-        marker=dict(size=8),
-        line=dict(color=clone_colors(1)[0]),
-    ))
+    fig = go.Figure(
+        go.Scatter(
+            x=ks_sorted,
+            y=bics_sorted,
+            mode="lines+markers",
+            marker=dict(size=8),
+            line=dict(color=clone_colors(1)[0]),
+        )
+    )
     # Highlight minimum
     best = int(np.argmin(bics_sorted))
-    fig.add_trace(go.Scatter(
-        x=[ks_sorted[best]],
-        y=[bics_sorted[best]],
-        mode="markers",
-        marker=dict(size=14, color="red", symbol="star"),
-        name="Best K",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=[ks_sorted[best]],
+            y=[bics_sorted[best]],
+            mode="markers",
+            marker=dict(size=14, color="red", symbol="star"),
+            name="Best K",
+        )
+    )
     fig.update_layout(xaxis_title="K (number of clones)", yaxis_title="BIC")
     return default_layout(fig, title or "BIC Curve")
 
@@ -57,13 +62,15 @@ def convergence_trace(
     _require_plotly()
     import plotly.graph_objects as go
 
-    fig = go.Figure(go.Scatter(
-        x=list(range(len(log_likelihoods))),
-        y=log_likelihoods,
-        mode="lines+markers",
-        marker=dict(size=4),
-        line=dict(color=clone_colors(1)[0]),
-    ))
+    fig = go.Figure(
+        go.Scatter(
+            x=list(range(len(log_likelihoods))),
+            y=log_likelihoods,
+            mode="lines+markers",
+            marker=dict(size=4),
+            line=dict(color=clone_colors(1)[0]),
+        )
+    )
     fig.update_layout(xaxis_title="Iteration", yaxis_title="Log-likelihood")
     return default_layout(fig, title or "Convergence Trace")
 
@@ -88,12 +95,14 @@ def feature_attribution_bar(
     values = [item[1] for item in sorted_items]
     bar_colors = ["#D55E00" if v < 0 else "#0072B2" for v in values]
 
-    fig = go.Figure(go.Bar(
-        x=values,
-        y=names,
-        orientation="h",
-        marker_color=bar_colors,
-    ))
+    fig = go.Figure(
+        go.Bar(
+            x=values,
+            y=names,
+            orientation="h",
+            marker_color=bar_colors,
+        )
+    )
     fig.update_layout(xaxis_title="Attribution", yaxis_title="Feature")
     return default_layout(fig, title or "Feature Attribution")
 
@@ -115,14 +124,16 @@ def responsibility_distribution(
     fig = go.Figure()
     for k in range(result.K):
         mask = assignments == k
-        fig.add_trace(go.Violin(
-            y=max_resp[mask],
-            name=f"Clone {k}",
-            box_visible=True,
-            meanline_visible=True,
-            fillcolor=colors[k],
-            line_color=colors[k],
-            opacity=0.7,
-        ))
+        fig.add_trace(
+            go.Violin(
+                y=max_resp[mask],
+                name=f"Clone {k}",
+                box_visible=True,
+                meanline_visible=True,
+                fillcolor=colors[k],
+                line_color=colors[k],
+                opacity=0.7,
+            )
+        )
     fig.update_layout(xaxis_title="Clone", yaxis_title="Max responsibility")
     return default_layout(fig, title or "Responsibility Distribution")

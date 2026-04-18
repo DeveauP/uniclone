@@ -9,6 +9,7 @@ of named presets.
 Every ``CloneConfig`` instance is validated on construction via
 ``__post_init__``, so invalid combinations are caught immediately.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -20,39 +21,39 @@ from enum import Enum, auto
 
 
 class EmissionModel(Enum):
-    BINOMIAL = auto()       # φ = 0 (QuantumClone original)
+    BINOMIAL = auto()  # φ = 0 (QuantumClone original)
     BETA_BINOMIAL = auto()  # φ estimated or fixed (PyClone, PyClone-VI)
-    BB_PARETO = auto()      # + neutral Pareto tail (MOBSTER)
-    DCF_BB = auto()         # variable multiplicity correction (DeCiFer)
+    BB_PARETO = auto()  # + neutral Pareto tail (MOBSTER)
+    DCF_BB = auto()  # variable multiplicity correction (DeCiFer)
 
 
 class InferenceEngine(Enum):
-    EM = auto()      # MAP / expectation-maximisation, fast, local-optima risk
-    MFVI = auto()    # mean-field variational inference, ELBO, auto-K
-    MCMC = auto()    # full posterior via PyMC (optional heavy dependency)
+    EM = auto()  # MAP / expectation-maximisation, fast, local-optima risk
+    MFVI = auto()  # mean-field variational inference, ELBO, auto-K
+    MCMC = auto()  # full posterior via PyMC (optional heavy dependency)
     HYBRID = auto()  # EM warm-start → MFVI refinement (new in UniClone)
 
 
 class KPrior(Enum):
-    BIC = auto()        # explicit K-range sweep, select by BIC
+    BIC = auto()  # explicit K-range sweep, select by BIC
     DIRICHLET = auto()  # Dirichlet concentration α, automatic K
-    TSSB = auto()       # tree-structured stick-breaking (PhyClone-style)
-    FIXED = auto()      # K specified by user via ``n_clones``
+    TSSB = auto()  # tree-structured stick-breaking (PhyClone-style)
+    FIXED = auto()  # K specified by user via ``n_clones``
 
 
 class PhyloMode(Enum):
-    NONE = auto()        # clustering only, no tree
-    POST_HOC = auto()    # is_included nesting matrix after convergence
-    CONSTRAINED = auto() # sigmoid reparametrisation in M-step (plan v1)
+    NONE = auto()  # clustering only, no tree
+    POST_HOC = auto()  # is_included nesting matrix after convergence
+    CONSTRAINED = auto()  # sigmoid reparametrisation in M-step (plan v1)
     JOINT_MCMC = auto()  # TSSB prior over trees (PhyClone-style)
-    LONGITUDINAL = auto()# time-ordering ILP (CALDER-style)
-    PAIRWISE = auto()    # pairs tensor (Pairtree-style)
+    LONGITUDINAL = auto()  # time-ordering ILP (CALDER-style)
+    PAIRWISE = auto()  # pairs tensor (Pairtree-style)
 
 
 class NoiseModel(Enum):
-    NONE = auto()          # no noise correction
-    TAIL_FILTER = auto()   # Pareto tail detection + mutation removal (MOBSTER)
-    ARTEFACT = auto()      # cluster consistency check (CONIPHER)
+    NONE = auto()  # no noise correction
+    TAIL_FILTER = auto()  # Pareto tail detection + mutation removal (MOBSTER)
+    ARTEFACT = auto()  # cluster consistency check (CONIPHER)
     MULTIPLICITY = auto()  # variable multiplicity enumeration (DeCiFer)
 
 
@@ -102,45 +103,31 @@ class CloneConfig:
     def validate(self) -> None:
         """Raise ValueError for any incompatible combination of settings."""
         if self.k_prior is KPrior.FIXED and self.n_clones is None:
-            raise ValueError(
-                "n_clones must be set when k_prior=FIXED"
-            )
+            raise ValueError("n_clones must be set when k_prior=FIXED")
         if self.phylo is PhyloMode.LONGITUDINAL and not self.longitudinal:
-            raise ValueError(
-                "PhyloMode.LONGITUDINAL requires longitudinal=True"
-            )
+            raise ValueError("PhyloMode.LONGITUDINAL requires longitudinal=True")
         if self.phylo is PhyloMode.JOINT_MCMC and self.inference not in (
             InferenceEngine.MCMC,
             InferenceEngine.HYBRID,
         ):
-            raise ValueError(
-                "PhyloMode.JOINT_MCMC requires InferenceEngine.MCMC or HYBRID"
-            )
+            raise ValueError("PhyloMode.JOINT_MCMC requires InferenceEngine.MCMC or HYBRID")
         if self.phi is not None and self.phi <= 0:
             raise ValueError(f"phi must be positive, got {self.phi}")
         if self.tail_weight is not None and not (0.0 < self.tail_weight < 1.0):
-            raise ValueError(
-                f"tail_weight must be in (0, 1), got {self.tail_weight}"
-            )
+            raise ValueError(f"tail_weight must be in (0, 1), got {self.tail_weight}")
         if self.n_samples < 1:
             raise ValueError(f"n_samples must be >= 1, got {self.n_samples}")
         if self.depth_median <= 0:
-            raise ValueError(
-                f"depth_median must be positive, got {self.depth_median}"
-            )
+            raise ValueError(f"depth_median must be positive, got {self.depth_median}")
         if not (0.0 < self.tail_threshold <= 1.0):
-            raise ValueError(
-                f"tail_threshold must be in (0, 1], got {self.tail_threshold}"
-            )
+            raise ValueError(f"tail_threshold must be in (0, 1], got {self.tail_threshold}")
         if not (0.0 <= self.artefact_absence_threshold <= 1.0):
             raise ValueError(
                 f"artefact_absence_threshold must be in [0, 1], "
                 f"got {self.artefact_absence_threshold}"
             )
         if not (0.0 < self.purity <= 1.0):
-            raise ValueError(
-                f"purity must be in (0, 1], got {self.purity}"
-            )
+            raise ValueError(f"purity must be in (0, 1], got {self.purity}")
 
     def __repr__(self) -> str:
         return (

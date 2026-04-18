@@ -1,4 +1,5 @@
 """uniclone.viz._style — Shared visual utilities for the viz suite."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -12,9 +13,7 @@ def _require_plotly() -> None:
     try:
         import plotly  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "Visualisation requires plotly: pip install uniclone[viz]"
-        ) from None
+        raise ImportError("Visualisation requires plotly: pip install uniclone[viz]") from None
 
 
 # 12-colour colourblind-safe palette (Wong + extended)

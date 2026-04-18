@@ -19,6 +19,7 @@ compute the effective allele frequency::
 and pass that as the ``mu`` argument.  Emission modules are unaware of
 ``adj_factor``; they receive only the already-adjusted expected frequency.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

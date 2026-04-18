@@ -1,4 +1,5 @@
 """uniclone.viz.cellularity — Clone cellularity visualisation (Phase 7)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -35,13 +36,15 @@ def vaf_histogram(
     fig = go.Figure()
     for k in range(result.K):
         mask = assignments == k
-        fig.add_trace(go.Histogram(
-            x=vaf[mask],
-            nbinsx=nbins,
-            name=f"Clone {k}",
-            marker_color=colors[k],
-            opacity=0.7,
-        ))
+        fig.add_trace(
+            go.Histogram(
+                x=vaf[mask],
+                nbinsx=nbins,
+                name=f"Clone {k}",
+                marker_color=colors[k],
+                opacity=0.7,
+            )
+        )
     fig.update_layout(barmode="overlay", xaxis_title="VAF", yaxis_title="Count")
     return default_layout(fig, title or "VAF Histogram")
 
@@ -68,13 +71,15 @@ def cellularity_scatter(
     fig = go.Figure()
     for k in range(result.K):
         mask = assignments == k
-        fig.add_trace(go.Scatter(
-            x=np.where(mask)[0],
-            y=vaf[mask],
-            mode="markers",
-            name=f"Clone {k}",
-            marker=dict(color=colors[k], size=4, opacity=0.6),
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=np.where(mask)[0],
+                y=vaf[mask],
+                mode="markers",
+                name=f"Clone {k}",
+                marker=dict(color=colors[k], size=4, opacity=0.6),
+            )
+        )
         # Centre line
         fig.add_hline(
             y=float(centers[k, sample_idx]),
@@ -103,12 +108,14 @@ def multi_sample_comparison(
 
     fig = go.Figure()
     for k in range(result.K):
-        fig.add_trace(go.Bar(
-            x=labels,
-            y=centers[k],
-            name=f"Clone {k}",
-            marker_color=colors[k],
-        ))
+        fig.add_trace(
+            go.Bar(
+                x=labels,
+                y=centers[k],
+                name=f"Clone {k}",
+                marker_color=colors[k],
+            )
+        )
     fig.update_layout(barmode="group", xaxis_title="Sample", yaxis_title="Cellularity")
     return default_layout(fig, title or "Multi-sample Comparison")
 
@@ -128,10 +135,12 @@ def responsibility_heatmap(
         order = np.argsort(result.assignments)
         resp = resp[order]
 
-    fig = go.Figure(go.Heatmap(
-        z=resp.T,
-        colorscale="Viridis",
-        colorbar=dict(title="P(clone)"),
-    ))
+    fig = go.Figure(
+        go.Heatmap(
+            z=resp.T,
+            colorscale="Viridis",
+            colorbar=dict(title="P(clone)"),
+        )
+    )
     fig.update_layout(xaxis_title="Mutation", yaxis_title="Clone")
     return default_layout(fig, title or "Responsibility Heatmap")

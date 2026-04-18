@@ -40,6 +40,7 @@ Usage::
         --exclude-configs phyloclone_style calder_style \
         --out data/models/router_online.pt
 """
+
 from __future__ import annotations
 
 import argparse
@@ -53,38 +54,69 @@ def main() -> None:
         description="Train NeuralTS MetaRouter via online bandit learning.",
     )
     parser.add_argument(
-        "--tumour-dir", type=str, default=None,
+        "--tumour-dir",
+        type=str,
+        default=None,
         help="Directory of tumour_NNNNNN.npz files.  If omitted, tumours are "
-             "generated to --work-dir/tumours.",
+        "generated to --work-dir/tumours.",
     )
-    parser.add_argument("--n-tumours", type=int, default=10_000,
-                        help="Number of base tumours to generate (if --tumour-dir not set).")
+    parser.add_argument(
+        "--n-tumours",
+        type=int,
+        default=10_000,
+        help="Number of base tumours to generate (if --tumour-dir not set).",
+    )
     parser.add_argument("--n-augmentations", type=int, default=3)
-    parser.add_argument("--simulator", type=str, default="bamsurgeon",
-                        choices=["bamsurgeon", "quantumcat"])
-    parser.add_argument("--n-pilot", type=int, default=200,
-                        help="Tumours scored exhaustively for encoder pre-training.")
-    parser.add_argument("--n-workers", type=int, default=4,
-                        help="Parallel workers for pilot phase.")
-    parser.add_argument("--epochs", type=int, default=50,
-                        help="Encoder pre-training epochs.")
+    parser.add_argument(
+        "--simulator", type=str, default="bamsurgeon", choices=["bamsurgeon", "quantumcat"]
+    )
+    parser.add_argument(
+        "--n-pilot",
+        type=int,
+        default=200,
+        help="Tumours scored exhaustively for encoder pre-training.",
+    )
+    parser.add_argument(
+        "--n-workers", type=int, default=4, help="Parallel workers for pilot phase."
+    )
+    parser.add_argument("--epochs", type=int, default=50, help="Encoder pre-training epochs.")
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--work-dir", type=str, default="data/online_train")
-    parser.add_argument("--out", type=str, default="data/models/router_online.pt",
-                        help="Output path for trained model weights.")
-    parser.add_argument("--exclude-configs", type=str, nargs="*", default=None,
-                        help="Config names to skip during training.  Defaults to "
-                             "['phyloclone_style'].  Pass --exclude-configs (no args) "
-                             "to include all configs.")
-    parser.add_argument("--checkpoint-every", type=int, default=1000,
-                        help="Save model checkpoint every N online tumours (default 1000).")
-    parser.add_argument("--log-dir", type=str, default=None,
-                        help="TensorBoard log directory.  If omitted, defaults to "
-                             "<work-dir>/tb_logs.")
-    parser.add_argument("--save-corpus", type=str, default=None,
-                        help="Optional: assemble and save corpus to this .npz path.")
+    parser.add_argument(
+        "--out",
+        type=str,
+        default="data/models/router_online.pt",
+        help="Output path for trained model weights.",
+    )
+    parser.add_argument(
+        "--exclude-configs",
+        type=str,
+        nargs="*",
+        default=None,
+        help="Config names to skip during training.  Defaults to "
+        "['phyloclone_style'].  Pass --exclude-configs (no args) "
+        "to include all configs.",
+    )
+    parser.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=1000,
+        help="Save model checkpoint every N online tumours (default 1000).",
+    )
+    parser.add_argument(
+        "--log-dir",
+        type=str,
+        default=None,
+        help="TensorBoard log directory.  If omitted, defaults to <work-dir>/tb_logs.",
+    )
+    parser.add_argument(
+        "--save-corpus",
+        type=str,
+        default=None,
+        help="Optional: assemble and save corpus to this .npz path.",
+    )
     args = parser.parse_args()
 
     # Resolve exclude_configs: None → use default, empty list → no exclusions
@@ -127,8 +159,9 @@ def main() -> None:
     from uniclone.router.constants import DEFAULT_EXCLUDE_CONFIGS, N_CONFIGS
     from uniclone.router.training import train_online
 
-    n_active = N_CONFIGS - len(exclude_configs if exclude_configs is not None
-                                else DEFAULT_EXCLUDE_CONFIGS)
+    n_active = N_CONFIGS - len(
+        exclude_configs if exclude_configs is not None else DEFAULT_EXCLUDE_CONFIGS
+    )
     n_tumour_files = len(list(tumour_dir.glob("tumour_*.npz")))
     exhaustive = n_tumour_files * n_active
     estimated = args.n_pilot * n_active + max(0, n_tumour_files - args.n_pilot)
@@ -167,6 +200,7 @@ def main() -> None:
 
     # Selection distribution
     from collections import Counter
+
     sel_counts = Counter(result.selections)
     print(f"  Online config selections ({len(result.selections)} tumours):")
     for cfg, count in sel_counts.most_common():
@@ -183,8 +217,9 @@ def main() -> None:
         "n_online": result.n_online,
         "n_total_fits": result.n_total_fits,
         "n_active_configs": n_active,
-        "excluded_configs": sorted(exclude_configs if exclude_configs is not None
-                                    else DEFAULT_EXCLUDE_CONFIGS),
+        "excluded_configs": sorted(
+            exclude_configs if exclude_configs is not None else DEFAULT_EXCLUDE_CONFIGS
+        ),
         "n_epochs": args.epochs,
         "batch_size": args.batch_size,
         "lr": args.lr,

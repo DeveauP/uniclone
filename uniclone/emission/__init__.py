@@ -5,6 +5,7 @@ uniclone.emission
 Emission module registry.  Maps ``EmissionModel`` enum values to their
 implementing classes.
 """
+
 from __future__ import annotations
 
 from uniclone.core.config import EmissionModel

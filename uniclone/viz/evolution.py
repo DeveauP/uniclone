@@ -1,4 +1,5 @@
 """uniclone.viz.evolution — Clonal evolution visualisation (Phase 7)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -38,15 +39,17 @@ def fish_plot(
 
     fig = go.Figure()
     for k in order:
-        fig.add_trace(go.Scatter(
-            x=labels,
-            y=centers[k],
-            mode="lines",
-            name=f"Clone {k}",
-            line=dict(width=0.5, color=colors[k]),
-            stackgroup="one",
-            fillcolor=colors[k],
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=labels,
+                y=centers[k],
+                mode="lines",
+                name=f"Clone {k}",
+                line=dict(width=0.5, color=colors[k]),
+                stackgroup="one",
+                fillcolor=colors[k],
+            )
+        )
     fig.update_layout(xaxis_title="Sample", yaxis_title="Cellularity")
     return default_layout(fig, title or "Fish Plot")
 
@@ -68,11 +71,13 @@ def clone_proportion_bar(
 
     fig = go.Figure()
     for k in range(n_clones):
-        fig.add_trace(go.Bar(
-            x=labels,
-            y=centers[k],
-            name=f"Clone {k}",
-            marker_color=colors[k],
-        ))
+        fig.add_trace(
+            go.Bar(
+                x=labels,
+                y=centers[k],
+                name=f"Clone {k}",
+                marker_color=colors[k],
+            )
+        )
     fig.update_layout(barmode="stack", xaxis_title="Sample", yaxis_title="Cellularity")
     return default_layout(fig, title or "Clone Proportions")

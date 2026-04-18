@@ -12,6 +12,7 @@ References
 ----------
 - CALDER: Myers et al. (2022)
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -93,7 +94,7 @@ class LongitudinalPhylo:
         root = int(order[0])
 
         n_edge = K * K  # e[i,j] = var index i*K + j
-        n_u = K          # u[i] = var index n_edge + i
+        n_u = K  # u[i] = var index n_edge + i
         n_vars = n_edge + n_u
 
         # Edge weights: correlation of CCF profiles (higher = better)

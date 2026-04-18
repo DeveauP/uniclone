@@ -11,6 +11,7 @@ Note: True R parity (running R directly) can be validated locally with:
     R -e "dbinom(10, 50, 0.3, log=TRUE)"  # expected: -3.584895
 This is not run in CI as R is not installed there.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -27,21 +28,18 @@ from uniclone.emission.binomial import BinomialEmission
 
 PARITY_TABLE = [
     # (alt, depth, mu, description)
-    (10,  50,  0.3,  "typical WES read counts"),
-    (25,  50,  0.5,  "half depth, at mode"),
-    (0,   50,  0.3,  "alt=0, should not NaN"),
-    (50,  50,  0.9,  "alt=depth"),
-    (1,   100, 0.01, "rare variant"),
-    (99,  100, 0.99, "near-fixed variant"),
-    (30,  100, 0.3,  "at mode"),
-    (5,   200, 0.025,"low VAF, high depth"),
-    (100, 200, 0.5,  "canonical 50% VAF"),
+    (10, 50, 0.3, "typical WES read counts"),
+    (25, 50, 0.5, "half depth, at mode"),
+    (0, 50, 0.3, "alt=0, should not NaN"),
+    (50, 50, 0.9, "alt=depth"),
+    (1, 100, 0.01, "rare variant"),
+    (99, 100, 0.99, "near-fixed variant"),
+    (30, 100, 0.3, "at mode"),
+    (5, 200, 0.025, "low VAF, high depth"),
+    (100, 200, 0.5, "canonical 50% VAF"),
 ]
 
-PARITY_CASES = [
-    (k, n, p, float(binom.logpmf(k, n, p)), desc)
-    for k, n, p, desc in PARITY_TABLE
-]
+PARITY_CASES = [(k, n, p, float(binom.logpmf(k, n, p)), desc) for k, n, p, desc in PARITY_TABLE]
 
 
 @pytest.fixture

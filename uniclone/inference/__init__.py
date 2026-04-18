@@ -5,6 +5,7 @@ uniclone.inference
 Inference module registry.  Maps ``InferenceEngine`` enum values to their
 implementing classes.
 """
+
 from __future__ import annotations
 
 from uniclone.core.config import InferenceEngine

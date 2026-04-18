@@ -20,6 +20,7 @@ References
 
 Status: IMPLEMENTED — Phase 1.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -68,24 +69,14 @@ class BetaBinomialEmission:
         beta = (1.0 - mu_clipped) * phi
 
         # log C(n, k) = log(n!) - log(k!) - log((n-k)!)
-        log_binom_coef = (
-            B.gammaln(depth + 1)
-            - B.gammaln(alt + 1)
-            - B.gammaln(depth - alt + 1)
-        )
+        log_binom_coef = B.gammaln(depth + 1) - B.gammaln(alt + 1) - B.gammaln(depth - alt + 1)
 
         # log B(k + alpha, n-k + beta) - log B(alpha, beta)
         # where log B(a, b) = gammaln(a) + gammaln(b) - gammaln(a + b)
         log_beta_num = (
-            B.gammaln(alt + alpha)
-            + B.gammaln(depth - alt + beta)
-            - B.gammaln(depth + alpha + beta)
+            B.gammaln(alt + alpha) + B.gammaln(depth - alt + beta) - B.gammaln(depth + alpha + beta)
         )
-        log_beta_den = (
-            B.gammaln(alpha)
-            + B.gammaln(beta)
-            - B.gammaln(alpha + beta)
-        )
+        log_beta_den = B.gammaln(alpha) + B.gammaln(beta) - B.gammaln(alpha + beta)
 
         log_lik = log_binom_coef + log_beta_num - log_beta_den
-        return log_lik.sum(axis=-1)  # type: ignore[no-any-return]
+        return log_lik.sum(axis=-1)

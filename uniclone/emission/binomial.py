@@ -15,6 +15,7 @@ This corresponds to the QuantumClone original emission (φ = 0 limit).
 
 Status: IMPLEMENTED — Phase 0.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -61,15 +62,7 @@ class BinomialEmission:
         """
         mu_clipped = B.clip(mu, 1e-10, 1.0 - 1e-10)
 
-        log_binom_coef = (
-            B.gammaln(depth + 1)
-            - B.gammaln(alt + 1)
-            - B.gammaln(depth - alt + 1)
-        )
-        log_lik = (
-            log_binom_coef
-            + B.xlogy(alt, mu_clipped)
-            + B.xlogy(depth - alt, 1.0 - mu_clipped)
-        )
+        log_binom_coef = B.gammaln(depth + 1) - B.gammaln(alt + 1) - B.gammaln(depth - alt + 1)
+        log_lik = log_binom_coef + B.xlogy(alt, mu_clipped) + B.xlogy(depth - alt, 1.0 - mu_clipped)
         # Sum over samples axis
-        return log_lik.sum(axis=-1)  # type: ignore[no-any-return]
+        return log_lik.sum(axis=-1)

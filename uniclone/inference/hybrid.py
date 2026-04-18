@@ -9,6 +9,7 @@ obtain a proper posterior approximation and automatic cluster pruning.
 
 Status: IMPLEMENTED — Phase 2.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -68,12 +69,8 @@ class HybridInference:
         em_result = em.run(alt, depth, adj_factor, emission, phylo, centers_init, K)
 
         # Phase 2: MFVI refinement with warm centers
-        mfvi = MFVIInference(
-            self.config, max_iter=self.max_iter, tol=self.tol, alpha0=self.alpha0
-        )
-        mfvi_result = mfvi.run(
-            alt, depth, adj_factor, emission, phylo, em_result.centers, K
-        )
+        mfvi = MFVIInference(self.config, max_iter=self.max_iter, tol=self.tol, alpha0=self.alpha0)
+        mfvi_result = mfvi.run(alt, depth, adj_factor, emission, phylo, em_result.centers, K)
 
         # Combined iteration count
         mfvi_result.n_iter = self.n_em + mfvi_result.n_iter

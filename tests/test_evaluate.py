@@ -1,4 +1,5 @@
 """Tests for uniclone.router.evaluate — requires torch."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -27,12 +28,14 @@ def _make_corpus(n_tumours: int = 10, rng_seed: int = 42) -> list[CorpusEntry]:
         feat = rng.standard_normal(N_FEATURES)
         for config_name in CONFIG_NAMES:
             for sc in SUBCHALLENGES:
-                entries.append(CorpusEntry(
-                    features=feat.copy(),
-                    subchallenge=sc,
-                    config_name=config_name,
-                    score=rng.uniform(0, 1),
-                ))
+                entries.append(
+                    CorpusEntry(
+                        features=feat.copy(),
+                        subchallenge=sc,
+                        config_name=config_name,
+                        score=rng.uniform(0, 1),
+                    )
+                )
     return entries
 
 

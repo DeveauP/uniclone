@@ -1,4 +1,5 @@
 """Tests for uniclone.router.training — requires torch."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -26,12 +27,14 @@ def mini_corpus():
         feat = rng.standard_normal(N_FEATURES)
         for config_name in CONFIG_NAMES[:5]:  # 5 configs
             for sc in SUBCHALLENGES:
-                entries.append(CorpusEntry(
-                    features=feat.copy(),
-                    subchallenge=sc,
-                    config_name=config_name,
-                    score=rng.uniform(0, 1),
-                ))
+                entries.append(
+                    CorpusEntry(
+                        features=feat.copy(),
+                        subchallenge=sc,
+                        config_name=config_name,
+                        score=rng.uniform(0, 1),
+                    )
+                )
     return entries
 
 
@@ -186,10 +189,13 @@ class TestScoreResult:
         )
 
         # Simulate tail-filtered result: 80 kept, 20 filtered as -1
-        assignments = np.concatenate([
-            np.zeros(40, dtype=int), np.ones(40, dtype=int),
-            np.full(20, -1, dtype=int),
-        ])
+        assignments = np.concatenate(
+            [
+                np.zeros(40, dtype=int),
+                np.ones(40, dtype=int),
+                np.full(20, -1, dtype=int),
+            ]
+        )
 
         class MockResult:
             K = 2
@@ -259,10 +265,13 @@ class TestScoreResult:
 
         params = QuantumCatParams(n_clones=2, n_mutations=100, purity=0.8, seed=42)
         # 80 real mutations (clones 0,1) + 20 tail (label=2, which is K)
-        true_assign = np.concatenate([
-            np.zeros(40, dtype=int), np.ones(40, dtype=int),
-            np.full(20, 2, dtype=int),  # tail label = K
-        ])
+        true_assign = np.concatenate(
+            [
+                np.zeros(40, dtype=int),
+                np.ones(40, dtype=int),
+                np.full(20, 2, dtype=int),  # tail label = K
+            ]
+        )
         gt = QuantumCatResult(
             alt=np.zeros((120, 1)),
             depth=np.full((120, 1), 100),
@@ -277,10 +286,13 @@ class TestScoreResult:
         class MockResult:
             K = 2
             centers = np.array([[0.8], [0.4]])
-            assignments = np.concatenate([
-                np.zeros(40, dtype=int), np.ones(40, dtype=int),
-                np.zeros(20, dtype=int),  # tail assigned to clone 0 (doesn't matter)
-            ])
+            assignments = np.concatenate(
+                [
+                    np.zeros(40, dtype=int),
+                    np.ones(40, dtype=int),
+                    np.zeros(20, dtype=int),  # tail assigned to clone 0 (doesn't matter)
+                ]
+            )
             tree = None
 
         score = score_result(MockResult(), gt, SubChallenge.SC2B)
@@ -329,6 +341,7 @@ class TestGenerateTumoursManifest:
         manifest = json.loads((tmp_path / "tumours" / "manifest.json").read_text())
         # BAMSurgeon is not installed in CI, so it must have fallen back
         from uniclone.simulate.bamsurgeon_wrap import is_available
+
         if is_available():
             assert manifest["simulator"] == "bamsurgeon"
         else:

@@ -2,6 +2,7 @@
 Tests for phylogenetic modules: tree_utils, PostHocPhylo, ConstrainedPhylo,
 LongitudinalPhylo, PairwisePhylo, JointMCMCPhylo.
 """
+
 from __future__ import annotations
 
 import warnings
@@ -37,47 +38,57 @@ from uniclone.phylo.tree_utils import (
 class TestTreeUtils:
     def test_topological_sort_chain(self) -> None:
         """0→1→2 should give [0, 1, 2]."""
-        adj = np.array([
-            [False, True, False],
-            [False, False, True],
-            [False, False, False],
-        ])
+        adj = np.array(
+            [
+                [False, True, False],
+                [False, False, True],
+                [False, False, False],
+            ]
+        )
         order = topological_sort(adj)
         assert order == [0, 1, 2]
 
     def test_topological_sort_fan(self) -> None:
         """0→1, 0→2 should start with 0."""
-        adj = np.array([
-            [False, True, True],
-            [False, False, False],
-            [False, False, False],
-        ])
+        adj = np.array(
+            [
+                [False, True, True],
+                [False, False, False],
+                [False, False, False],
+            ]
+        )
         order = topological_sort(adj)
         assert order[0] == 0
         assert set(order) == {0, 1, 2}
 
     def test_topological_sort_cycle_raises(self) -> None:
-        adj = np.array([
-            [False, True, False],
-            [False, False, True],
-            [True, False, False],
-        ])
+        adj = np.array(
+            [
+                [False, True, False],
+                [False, False, True],
+                [True, False, False],
+            ]
+        )
         with pytest.raises(ValueError, match="cycle"):
             topological_sort(adj)
 
     def test_is_valid_dag_true(self) -> None:
-        adj = np.array([
-            [False, True, False],
-            [False, False, True],
-            [False, False, False],
-        ])
+        adj = np.array(
+            [
+                [False, True, False],
+                [False, False, True],
+                [False, False, False],
+            ]
+        )
         assert is_valid_dag(adj) is True
 
     def test_is_valid_dag_false(self) -> None:
-        adj = np.array([
-            [False, True],
-            [True, False],
-        ])
+        adj = np.array(
+            [
+                [False, True],
+                [True, False],
+            ]
+        )
         assert is_valid_dag(adj) is False
 
     def test_build_nesting_order(self) -> None:
@@ -130,22 +141,26 @@ class TestTreeUtils:
             assert len(trees) > 0
 
     def test_adjacency_to_parent_vector_chain(self) -> None:
-        adj = np.array([
-            [False, True, False],
-            [False, False, True],
-            [False, False, False],
-        ])
+        adj = np.array(
+            [
+                [False, True, False],
+                [False, False, True],
+                [False, False, False],
+            ]
+        )
         parent = adjacency_to_parent_vector(adj)
         assert parent[0] == -1
         assert parent[1] == 0
         assert parent[2] == 1
 
     def test_adjacency_to_parent_vector_fan(self) -> None:
-        adj = np.array([
-            [False, True, True],
-            [False, False, False],
-            [False, False, False],
-        ])
+        adj = np.array(
+            [
+                [False, True, True],
+                [False, False, False],
+                [False, False, False],
+            ]
+        )
         parent = adjacency_to_parent_vector(adj)
         assert parent[0] == -1
         assert parent[1] == 0
@@ -365,11 +380,13 @@ class TestLongitudinalPhylo:
         )
         phylo = LongitudinalPhylo(config)
         # 3 clones, 3 timepoints with clear nesting
-        centers = np.array([
-            [0.7, 0.6, 0.5],
-            [0.4, 0.3, 0.2],
-            [0.2, 0.1, 0.05],
-        ])
+        centers = np.array(
+            [
+                [0.7, 0.6, 0.5],
+                [0.4, 0.3, 0.2],
+                [0.2, 0.1, 0.05],
+            ]
+        )
         cr = CloneResult(
             centers=centers,
             assignments=np.array([0, 1, 2]),
@@ -430,10 +447,12 @@ class TestLongitudinalPhylo:
         )
         phylo = LongitudinalPhylo(config)
         # Clones with crossing cellularities (hard to form valid tree with sum rule)
-        centers = np.array([
-            [0.8, 0.2],
-            [0.2, 0.8],
-        ])
+        centers = np.array(
+            [
+                [0.8, 0.2],
+                [0.2, 0.8],
+            ]
+        )
         cr = CloneResult(
             centers=centers,
             assignments=np.array([0, 1]),

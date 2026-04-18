@@ -3,6 +3,7 @@ Tests for HybridInference (EM warm-up + MFVI refinement).
 
 Covers: 1-clone and 2-clone center recovery, results similar to standalone MFVI.
 """
+
 from __future__ import annotations
 
 import numpy as np

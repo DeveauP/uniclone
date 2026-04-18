@@ -23,6 +23,7 @@ Usage::
     # Legacy one-shot (backwards compatible):
     python -m scripts.generate_corpus --n-tumours 10000
 """
+
 from __future__ import annotations
 
 import argparse
@@ -70,7 +71,8 @@ def _cmd_score(args: argparse.Namespace) -> None:
     print(f"Scored {len(corpus)} entries in {elapsed:.1f}s")
 
     save_corpus(
-        corpus, args.out,
+        corpus,
+        args.out,
         extras={
             "tumour_dir": str(tumour_dir),
             "elimination_margin": args.elimination_margin,
@@ -107,7 +109,8 @@ def _cmd_all(args: argparse.Namespace) -> None:
     print(f"Generated {len(corpus)} entries in {elapsed:.1f}s")
 
     save_corpus(
-        corpus, args.out,
+        corpus,
+        args.out,
         extras={
             "n_tumours": args.n_tumours,
             "n_augmentations": args.n_augmentations,
@@ -128,8 +131,9 @@ def main() -> None:
     p_gen = sub.add_parser("generate", help="Simulate tumours to disk (fast).")
     p_gen.add_argument("--n-tumours", type=int, default=10_000)
     p_gen.add_argument("--n-augmentations", type=int, default=3)
-    p_gen.add_argument("--simulator", type=str, default="bamsurgeon",
-                       choices=["bamsurgeon", "quantumcat"])
+    p_gen.add_argument(
+        "--simulator", type=str, default="bamsurgeon", choices=["bamsurgeon", "quantumcat"]
+    )
     p_gen.add_argument("--tumour-dir", type=str, default="data/corpus/tumours")
     _add_common_args(p_gen)
 
@@ -145,8 +149,9 @@ def main() -> None:
     p_all.add_argument("--n-tumours", type=int, default=10_000)
     p_all.add_argument("--n-augmentations", type=int, default=3)
     p_all.add_argument("--n-workers", type=int, default=4)
-    p_all.add_argument("--simulator", type=str, default="bamsurgeon",
-                       choices=["bamsurgeon", "quantumcat"])
+    p_all.add_argument(
+        "--simulator", type=str, default="bamsurgeon", choices=["bamsurgeon", "quantumcat"]
+    )
     p_all.add_argument("--elimination-margin", type=float, default=0.25)
     _add_common_args(p_all)
 
@@ -174,7 +179,9 @@ def main() -> None:
         args.n_augmentations = args.n_augmentations or 3
         args.n_workers = args.n_workers or 4
         args.simulator = args.simulator or "bamsurgeon"
-        args.elimination_margin = args.elimination_margin if args.elimination_margin is not None else 0.25
+        args.elimination_margin = (
+            args.elimination_margin if args.elimination_margin is not None else 0.25
+        )
         args.seed = args.seed or 42
         args.out = args.out or "data/corpus/corpus.npz"
         _cmd_all(args)

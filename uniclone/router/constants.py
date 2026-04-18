@@ -5,6 +5,7 @@ uniclone.router.constants
 Shared constants for the MetaRouter: DREAM subchallenges, feature names,
 and configuration names.
 """
+
 from __future__ import annotations
 
 from enum import Enum, auto
@@ -17,7 +18,7 @@ class SubChallenge(Enum):
     SC1B = auto()  # CCF estimation per mutation
     SC2A = auto()  # Number of clones (K)
     SC2B = auto()  # Cluster assignment
-    SC3 = auto()   # Phylogenetic tree
+    SC3 = auto()  # Phylogenetic tree
 
     def __str__(self) -> str:
         return self.name

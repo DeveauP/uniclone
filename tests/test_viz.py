@@ -1,4 +1,5 @@
 """Tests for uniclone.viz (Phase 7)."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -145,9 +146,7 @@ class TestMultiSampleComparison:
     def test_custom_labels(self, mock_result: CloneResult) -> None:
         from uniclone.viz.cellularity import multi_sample_comparison
 
-        fig = multi_sample_comparison(
-            mock_result, sample_labels=["Primary", "Met"]
-        )
+        fig = multi_sample_comparison(mock_result, sample_labels=["Primary", "Met"])
         assert fig.data[0].x is not None
 
 
@@ -229,16 +228,18 @@ class TestBicCurve:
 
         results = []
         for k in range(1, 6):
-            results.append(CloneResult(
-                centers=np.random.default_rng(k).random((k, 2)),
-                assignments=np.zeros(100, dtype=int),
-                responsibilities=np.ones((100, k)) / k,
-                log_likelihood=-500.0 + k * 10,
-                bic=1000.0 - k * 50 + k**2 * 20,
-                K=k,
-                n_iter=50,
-                converged=True,
-            ))
+            results.append(
+                CloneResult(
+                    centers=np.random.default_rng(k).random((k, 2)),
+                    assignments=np.zeros(100, dtype=int),
+                    responsibilities=np.ones((100, k)) / k,
+                    log_likelihood=-500.0 + k * 10,
+                    bic=1000.0 - k * 50 + k**2 * 20,
+                    K=k,
+                    n_iter=50,
+                    converged=True,
+                )
+            )
         fig = bic_curve(results)
         assert isinstance(fig, go.Figure)
         assert len(fig.data) == 2  # line + star marker

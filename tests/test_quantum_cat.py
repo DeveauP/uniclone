@@ -1,4 +1,5 @@
 """Tests for uniclone.simulate.quantum_cat — no torch required."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -129,7 +130,11 @@ class TestNeutralTailLabels:
         """Neutral tail mutations should NOT be labelled as clone 0."""
         noise = NoiseParams(neutral_tail_frac=0.3, neutral_tail_shape=1.0)
         params = QuantumCatParams(
-            n_clones=2, n_mutations=200, purity=0.8, seed=42, noise=noise,
+            n_clones=2,
+            n_mutations=200,
+            purity=0.8,
+            seed=42,
+            noise=noise,
         )
         result = simulate_quantumcat(params)
 
@@ -153,7 +158,10 @@ class TestAugmentResult:
         rng = np.random.default_rng(42)
         # Use many clones + few mutations to make clone orphaning likely
         params = QuantumCatParams(
-            n_clones=5, n_mutations=100, purity=0.8, seed=42,
+            n_clones=5,
+            n_mutations=100,
+            purity=0.8,
+            seed=42,
             clone_fractions=np.array([0.4, 0.3, 0.15, 0.10, 0.05]),
         )
         result = simulate_quantumcat(params)

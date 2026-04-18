@@ -4,6 +4,7 @@ uniclone.inference._utils
 
 Shared helper functions used by EM, MFVI, Hybrid, and MCMC inference engines.
 """
+
 from __future__ import annotations
 
 from uniclone.core.backend import B

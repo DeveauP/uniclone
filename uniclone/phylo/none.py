@@ -9,6 +9,7 @@ Both ``constrain`` and ``postprocess`` return their inputs unchanged.
 
 Status: IMPLEMENTED — Phase 0 (trivial).
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

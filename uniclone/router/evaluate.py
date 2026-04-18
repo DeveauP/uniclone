@@ -8,6 +8,7 @@ Evaluation metrics for the NeuralTS MetaRouter.
 - routing_gain: improvement over a fixed baseline config
 - cumulative_regret: online regret over a stream of tumours
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -56,10 +57,7 @@ def oracle_regret(
         router_score = config_scores.get(selected, 0.0)
         regrets[sc].append(oracle_score - router_score)
 
-    return {
-        sc: float(np.mean(vals)) if vals else 0.0
-        for sc, vals in regrets.items()
-    }
+    return {sc: float(np.mean(vals)) if vals else 0.0 for sc, vals in regrets.items()}
 
 
 def routing_gain(
@@ -103,10 +101,7 @@ def routing_gain(
         router_score = config_scores.get(selected, 0.0)
         gains[sc].append(router_score - baseline_score)
 
-    return {
-        sc: float(np.mean(vals)) if vals else 0.0
-        for sc, vals in gains.items()
-    }
+    return {sc: float(np.mean(vals)) if vals else 0.0 for sc, vals in gains.items()}
 
 
 def cumulative_regret(

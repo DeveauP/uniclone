@@ -12,6 +12,7 @@ References
 ----------
 - Pairtree: Wintersinger et al. (2022) *Nature Genetics*
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -165,9 +166,7 @@ class PairwisePhylo:
                 score += np.log(max(pairs[i, j, rel], 1e-30))
         return score
 
-    def _enumerate_and_score(
-        self, centers: Tensor, K: int, pairs: Tensor
-    ) -> Tensor:
+    def _enumerate_and_score(self, centers: Tensor, K: int, pairs: Tensor) -> Tensor:
         """Enumerate all trees and pick the highest scoring one."""
         trees = enumerate_trees(K)
         best_adj = trees[0]

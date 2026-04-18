@@ -5,6 +5,7 @@ uniclone.phylo.tree_utils
 Shared phylogenetic tree utilities: topological sort, DAG validation,
 nesting checks, tree enumeration, and adjacency/parent conversions.
 """
+
 from __future__ import annotations
 
 import warnings
@@ -21,8 +22,8 @@ from uniclone.core.types import Tensor
 class TreeResult:
     """Typed container for phylogenetic tree output."""
 
-    adjacency: Tensor   # (K, K) bool — adjacency[i,j]=True means i→j edge
-    parent: Tensor      # (K,) int — parent[root]=-1
+    adjacency: Tensor  # (K, K) bool — adjacency[i,j]=True means i→j edge
+    parent: Tensor  # (K,) int — parent[root]=-1
     is_included: Tensor  # (K, K) bool — nesting matrix
 
 

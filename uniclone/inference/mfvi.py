@@ -21,6 +21,7 @@ References
 
 Status: IMPLEMENTED — Phase 2.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -118,9 +119,7 @@ class MFVIInference:
 
         # Compute actual marginal LL at converged parameters for BIC
         log_pi = B.log(B.clip(alpha / alpha.sum(), 1e-10, None))
-        log_resp_final = compute_log_resp(
-            alt, depth, adj_factor, emission, centers, log_pi
-        )
+        log_resp_final = compute_log_resp(alt, depth, adj_factor, emission, centers, log_pi)
         ll = compute_marginal_ll(log_resp_final)
 
         n_mut = alt.shape[0]
@@ -184,8 +183,10 @@ class MFVIInference:
         # KL(Dir(alpha) || Dir(alpha0))
         alpha0_vec = B.full((K,), self.alpha0)
         kl = float(
-            B.gammaln(alpha.sum()) - B.gammaln(alpha0_vec.sum())
-            - B.gammaln(alpha).sum() + B.gammaln(alpha0_vec).sum()
+            B.gammaln(alpha.sum())
+            - B.gammaln(alpha0_vec.sum())
+            - B.gammaln(alpha).sum()
+            + B.gammaln(alpha0_vec).sum()
             + ((alpha - alpha0_vec) * (B.digamma(alpha) - B.digamma(alpha.sum()))).sum()
         )
 

@@ -1,4 +1,5 @@
 """uniclone.viz.phylo_tree — Phylogenetic tree visualisation (Phase 7)."""
+
 from __future__ import annotations
 
 from collections import deque
@@ -87,40 +88,40 @@ def clone_tree(
             edge_y.extend([py, cy, None])
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=edge_x,
-        y=edge_y,
-        mode="lines",
-        line=dict(color="#888", width=2),
-        hoverinfo="none",
-        showlegend=False,
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=edge_x,
+            y=edge_y,
+            mode="lines",
+            line=dict(color="#888", width=2),
+            hoverinfo="none",
+            showlegend=False,
+        )
+    )
 
     # Draw nodes
     node_x = [pos[i][0] for i in range(n_clones)]
     node_y = [pos[i][1] for i in range(n_clones)]
-    node_text = [
-        f"{labels[i]}<br>φ={centers[i, sample_idx]:.3f}" for i in range(n_clones)
-    ]
-    node_sizes = [
-        max(15, float(centers[i, sample_idx]) * 50) for i in range(n_clones)
-    ]
+    node_text = [f"{labels[i]}<br>φ={centers[i, sample_idx]:.3f}" for i in range(n_clones)]
+    node_sizes = [max(15, float(centers[i, sample_idx]) * 50) for i in range(n_clones)]
 
-    fig.add_trace(go.Scatter(
-        x=node_x,
-        y=node_y,
-        mode="markers+text",
-        text=[labels[i] for i in range(n_clones)],
-        textposition="top center",
-        hovertext=node_text,
-        hoverinfo="text",
-        marker=dict(
-            size=node_sizes,
-            color=[colors[i] for i in range(n_clones)],
-            line=dict(width=1, color="white"),
-        ),
-        showlegend=False,
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=node_x,
+            y=node_y,
+            mode="markers+text",
+            text=[labels[i] for i in range(n_clones)],
+            textposition="top center",
+            hovertext=node_text,
+            hoverinfo="text",
+            marker=dict(
+                size=node_sizes,
+                color=[colors[i] for i in range(n_clones)],
+                line=dict(width=1, color="white"),
+            ),
+            showlegend=False,
+        )
+    )
 
     # Edge labels (cellularity difference)
     if show_edge_labels:
@@ -131,8 +132,11 @@ def clone_tree(
                 my = (pos[p][1] + pos[child][1]) / 2
                 diff = abs(centers[p, sample_idx] - centers[child, sample_idx])
                 fig.add_annotation(
-                    x=mx, y=my, text=f"Δ={diff:.2f}",
-                    showarrow=False, font=dict(size=9),
+                    x=mx,
+                    y=my,
+                    text=f"Δ={diff:.2f}",
+                    showarrow=False,
+                    font=dict(size=9),
                 )
 
     fig.update_layout(

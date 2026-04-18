@@ -20,6 +20,7 @@ Usage::
     python -m scripts.run_pipeline --n-tumours 500 --n-augmentations 5 \
         --epochs 30 --tag experiment_1
 """
+
 from __future__ import annotations
 
 import argparse
@@ -27,6 +28,7 @@ import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -92,12 +94,14 @@ PRESETS: dict[str, dict] = {
 }
 
 
-def _parse_args() -> PipelineConfig:
+def _parse_args() -> dict[str, Any]:
     parser = argparse.ArgumentParser(
         description="End-to-end MetaRouter pipeline: generate → train → evaluate.",
     )
     parser.add_argument(
-        "--preset", choices=list(PRESETS), default="debug",
+        "--preset",
+        choices=list(PRESETS),
+        default="debug",
         help="Preset configuration (default: debug).",
     )
 
@@ -106,8 +110,7 @@ def _parse_args() -> PipelineConfig:
     parser.add_argument("--n-augmentations", type=int, default=None)
     parser.add_argument("--n-workers", type=int, default=None)
     parser.add_argument("--seed", type=int, default=None)
-    parser.add_argument("--simulator", type=str, default=None,
-                        choices=["bamsurgeon", "quantumcat"])
+    parser.add_argument("--simulator", type=str, default=None, choices=["bamsurgeon", "quantumcat"])
     parser.add_argument("--elimination-margin", type=float, default=None)
 
     # Training overrides
@@ -124,21 +127,31 @@ def _parse_args() -> PipelineConfig:
     parser.add_argument("--tag", type=str, default=None)
 
     # Skip steps
-    parser.add_argument("--skip-generate", action="store_true",
-                        help="Skip corpus generation (reuse existing).")
-    parser.add_argument("--skip-train", action="store_true",
-                        help="Skip training (reuse existing model).")
-    parser.add_argument("--skip-eval", action="store_true",
-                        help="Skip evaluation.")
+    parser.add_argument(
+        "--skip-generate", action="store_true", help="Skip corpus generation (reuse existing)."
+    )
+    parser.add_argument(
+        "--skip-train", action="store_true", help="Skip training (reuse existing model)."
+    )
+    parser.add_argument("--skip-eval", action="store_true", help="Skip evaluation.")
 
     args = parser.parse_args()
 
     # Start from preset, override with explicit args
     cfg = dict(PRESETS[args.preset])
     for key in [
-        "n_tumours", "n_augmentations", "n_workers", "seed", "simulator",
+        "n_tumours",
+        "n_augmentations",
+        "n_workers",
+        "seed",
+        "simulator",
         "elimination_margin",
-        "epochs", "batch_size", "lr", "val_frac", "baseline", "n_ig_samples",
+        "epochs",
+        "batch_size",
+        "lr",
+        "val_frac",
+        "baseline",
+        "n_ig_samples",
         "tag",
     ]:
         val = getattr(args, key, None)
@@ -173,8 +186,9 @@ def main() -> None:
     print("=" * 60)
     print(f"MetaRouter Pipeline — preset={tag}")
     print("=" * 60)
-    print(f"  Tumours:       {cfg['n_tumours']} base × {1 + cfg['n_augmentations']} "
-          f"= {total_tumours}")
+    print(
+        f"  Tumours:       {cfg['n_tumours']} base × {1 + cfg['n_augmentations']} = {total_tumours}"
+    )
     print(f"  Simulator:     {cfg['simulator']}")
     print(f"  Elimination:   margin={cfg['elimination_margin']}")
     print(f"  Workers:       {cfg['n_workers']}")
@@ -193,9 +207,7 @@ def main() -> None:
     if skip_generate:
         print(f"[1/3] SKIP corpus generation (reusing {corpus_path})")
         if not corpus_path.exists():
-            raise FileNotFoundError(
-                f"--skip-generate but corpus not found: {corpus_path}"
-            )
+            raise FileNotFoundError(f"--skip-generate but corpus not found: {corpus_path}")
     else:
         from scripts._corpus_io import save_corpus
         from uniclone.router.training import generate_tumours, score_tumours
@@ -233,7 +245,8 @@ def main() -> None:
         print(f"        {len(corpus)} entries in {elapsed:.1f}s")
 
         save_corpus(
-            corpus, corpus_path,
+            corpus,
+            corpus_path,
             extras={
                 "n_tumours": cfg["n_tumours"],
                 "n_augmentations": cfg["n_augmentations"],
@@ -254,9 +267,7 @@ def main() -> None:
     if skip_train:
         print(f"[2/3] SKIP training (reusing {model_path})")
         if not model_path.exists():
-            raise FileNotFoundError(
-                f"--skip-train but model not found: {model_path}"
-            )
+            raise FileNotFoundError(f"--skip-train but model not found: {model_path}")
     else:
         print(f"[2/3] Training router → {model_path}")
 
@@ -295,12 +306,13 @@ def main() -> None:
         elapsed = time.perf_counter() - t0
 
         if result.train_losses:
-            print(f"       Final train loss: {result.train_losses[-1]:.4f} "
-                  f"({elapsed:.1f}s)")
+            print(f"       Final train loss: {result.train_losses[-1]:.4f} ({elapsed:.1f}s)")
         if result.val_losses:
             best_val = min(result.val_losses)
-            print(f"       Best val loss:    {best_val:.4f} "
-                  f"(epoch {result.val_losses.index(best_val) + 1})")
+            print(
+                f"       Best val loss:    {best_val:.4f} "
+                f"(epoch {result.val_losses.index(best_val) + 1})"
+            )
 
         # Save model
         model_path.parent.mkdir(parents=True, exist_ok=True)
@@ -308,10 +320,16 @@ def main() -> None:
         print(f"       Model → {model_path}")
 
         # Save losses
-        losses_path.write_text(json.dumps({
-            "train": result.train_losses,
-            "val": result.val_losses,
-        }, indent=2) + "\n")
+        losses_path.write_text(
+            json.dumps(
+                {
+                    "train": result.train_losses,
+                    "val": result.val_losses,
+                },
+                indent=2,
+            )
+            + "\n"
+        )
 
         # Save val corpus
         if val_corpus:
@@ -378,7 +396,9 @@ def main() -> None:
 
         # Routing gain
         rgain = routing_gain(
-            model, test_corpus, baseline_config=cfg["baseline"],
+            model,
+            test_corpus,
+            baseline_config=cfg["baseline"],
         )
         report["routing_gain"] = {sc.name: v for sc, v in rgain.items()}
 
@@ -392,7 +412,8 @@ def main() -> None:
             head._invalidate_cache()
         try:
             report["cumulative_regret"] = cumulative_regret(
-                model_copy, test_corpus,
+                model_copy,
+                test_corpus,
             )
         except ValueError as exc:
             print(f"       Warning: cumulative regret failed ({exc})")

@@ -5,6 +5,7 @@ uniclone.noise
 Noise module registry.  Maps ``NoiseModel`` enum values to their
 implementing classes.
 """
+
 from __future__ import annotations
 
 from uniclone.core.config import NoiseModel

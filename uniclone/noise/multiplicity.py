@@ -12,6 +12,7 @@ References
 ----------
 - DeCiFer: Marass et al. (2021) *Science Advances*
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -42,9 +43,7 @@ class MultiplicityNoise:
         self._total_cn: Tensor | None = None
         self._minor_cn: Tensor | None = None
 
-    def set_cn_state(
-        self, total_cn: Tensor, minor_cn: Tensor | None = None
-    ) -> None:
+    def set_cn_state(self, total_cn: Tensor, minor_cn: Tensor | None = None) -> None:
         """
         Store per-mutation copy number data.
 

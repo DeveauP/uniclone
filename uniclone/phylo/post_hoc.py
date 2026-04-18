@@ -13,6 +13,7 @@ This corresponds to the ``Phylogeny_tree.R`` step in QuantumClone.
 During inference, ``constrain`` is a no-op — the constraint is applied
 only in ``postprocess``, which is called once after the best K is selected.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

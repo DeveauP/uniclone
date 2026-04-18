@@ -13,6 +13,7 @@ References
 ----------
 - MOBSTER: Caravagna et al. (2020) *Nature Methods*
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -88,9 +89,7 @@ class TailFilterNoise:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _compute_tail_prob(
-        self, vaf: Tensor, alt_s: Tensor, depth_s: Tensor
-    ) -> Tensor:
+    def _compute_tail_prob(self, vaf: Tensor, alt_s: Tensor, depth_s: Tensor) -> Tensor:
         """Compute per-mutation posterior P(tail) for one sample."""
         vaf_safe = np.clip(vaf, _VAF_FLOOR, 1.0 - _VAF_FLOOR)
 
@@ -108,9 +107,7 @@ class TailFilterNoise:
         log_bb = self._beta_logpdf(vaf_safe, mu, phi)
 
         # Mixing weight
-        tau = self.tau if self.tau is not None else self._estimate_tau(
-            log_pareto, log_bb
-        )
+        tau = self.tau if self.tau is not None else self._estimate_tau(log_pareto, log_bb)
         tau = np.clip(tau, 1e-6, 1.0 - 1e-6)
 
         # Posterior P(tail | data) via Bayes
@@ -124,13 +121,10 @@ class TailFilterNoise:
     def _beta_logpdf(vaf: Tensor, mu: float, phi: float) -> Tensor:
         """Beta log-PDF for each mutation's VAF."""
         from scipy.special import betaln
+
         a = mu * phi
         b = (1.0 - mu) * phi
-        log_p = (
-            (a - 1.0) * np.log(vaf)
-            + (b - 1.0) * np.log(1.0 - vaf)
-            - betaln(a, b)
-        )
+        log_p = (a - 1.0) * np.log(vaf) + (b - 1.0) * np.log(1.0 - vaf) - betaln(a, b)
         return log_p
 
     @staticmethod

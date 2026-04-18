@@ -1,6 +1,7 @@
 """
 Tests for the compute backend abstraction (uniclone.core.backend).
 """
+
 from __future__ import annotations
 
 from unittest import mock
@@ -46,6 +47,7 @@ class TestSetBackendNumpy:
 class TestNumpyBackendOps:
     def test_digamma(self) -> None:
         from scipy.special import digamma as scipy_digamma
+
         x = np.array([1.0, 2.0, 5.0])
         np.testing.assert_allclose(_NumpyBackend.digamma(x), scipy_digamma(x))
 
@@ -58,6 +60,7 @@ class TestNumpyBackendOps:
 
     def test_logsumexp(self) -> None:
         from scipy.special import logsumexp as scipy_logsumexp
+
         x = np.array([[1.0, 2.0], [3.0, 4.0]])
         np.testing.assert_allclose(
             _NumpyBackend.logsumexp(x, axis=1),
@@ -116,18 +119,21 @@ class TestTorchBackend:
 
     def test_digamma_matches_scipy(self) -> None:
         from scipy.special import digamma as scipy_digamma
+
         x = np.array([1.0, 2.0, 5.0])
         result = backend_mod.B.to_numpy(backend_mod.B.digamma(x))
         np.testing.assert_allclose(result, scipy_digamma(x), atol=1e-10)
 
     def test_logsumexp(self) -> None:
         from scipy.special import logsumexp as scipy_logsumexp
+
         x = np.array([[1.0, 2.0], [3.0, 4.0]])
         result = backend_mod.B.to_numpy(backend_mod.B.logsumexp(x, axis=1))
         np.testing.assert_allclose(result, scipy_logsumexp(x, axis=1), atol=1e-10)
 
     def test_device_auto(self) -> None:
         import torch
+
         set_backend("torch", device="auto")
         b = get_backend()
         if torch.cuda.is_available():
@@ -176,10 +182,12 @@ class TestEMFullParity:
         from uniclone import CONFIGS, GenerativeModel
 
         rng = np.random.default_rng(42)
-        alt = np.concatenate([
-            rng.binomial(100, 0.2, size=(100, 1)),
-            rng.binomial(100, 0.5, size=(100, 1)),
-        ]).astype(float)
+        alt = np.concatenate(
+            [
+                rng.binomial(100, 0.2, size=(100, 1)),
+                rng.binomial(100, 0.5, size=(100, 1)),
+            ]
+        ).astype(float)
         depth = np.full((200, 1), 100.0)
 
         # NumPy
@@ -193,9 +201,5 @@ class TestEMFullParity:
         result_torch = model_torch.fit(alt, depth)
 
         set_backend("numpy")
-        np.testing.assert_allclose(
-            result_torch.centers, result_np.centers, atol=1e-6
-        )
-        np.testing.assert_allclose(
-            result_torch.log_likelihood, result_np.log_likelihood, atol=1e-4
-        )
+        np.testing.assert_allclose(result_torch.centers, result_np.centers, atol=1e-6)
+        np.testing.assert_allclose(result_torch.log_likelihood, result_np.log_likelihood, atol=1e-4)

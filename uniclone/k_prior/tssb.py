@@ -14,6 +14,7 @@ References
 
 Status: IMPLEMENTED (experimental).
 """
+
 from __future__ import annotations
 
 import warnings
@@ -82,7 +83,7 @@ class TSSBPrior:
         cumulative_stick = 1.0
         for k in range(K):
             weights[k] = nu[k] * cumulative_stick
-            cumulative_stick *= (1.0 - nu[k])
+            cumulative_stick *= 1.0 - nu[k]
         # Normalise for finite truncation
         weights /= weights.sum()
         self._init_weights = weights

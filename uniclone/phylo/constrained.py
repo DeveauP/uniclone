@@ -8,6 +8,7 @@ Applies a nesting projection to clone centers every M-step so that
 child clones always have cellularity <= their parent in all samples.
 After convergence, ``postprocess`` builds the full tree.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

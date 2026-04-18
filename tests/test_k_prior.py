@@ -3,6 +3,7 @@ Tests for DirichletPrior and TSSBPrior (K-prior modules).
 
 Covers: unit tests for schedule/init/select, end-to-end with MFVI and Hybrid.
 """
+
 from __future__ import annotations
 
 import warnings

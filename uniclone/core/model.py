@@ -17,6 +17,7 @@ The six-step pipeline
 5. **Phylo post-processing** — build the clone tree (post-hoc or joint).
 6. **Noise post-processing** — re-attach filtered mutations to the result.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -99,7 +100,7 @@ class GenerativeModel:
             adj_factor = adj_factor[:, np.newaxis]
 
         # Forward CN state to noise module if supported
-        if cn_state is not None and hasattr(self.noise, 'set_cn_state'):
+        if cn_state is not None and hasattr(self.noise, "set_cn_state"):
             self.noise.set_cn_state(**cn_state)
 
         # ------------------------------------------------------------------ #

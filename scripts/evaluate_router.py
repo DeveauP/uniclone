@@ -14,6 +14,7 @@ Usage::
         --n-ig-samples 200 \
         --out data/reports/eval_router_v1
 """
+
 from __future__ import annotations
 
 import argparse
@@ -124,9 +125,7 @@ def _feature_importance_ig(
         items = [items[i] for i in indices]
 
     # Accumulate |IG| per (sc, feature)
-    sc_ig: dict[str, np.ndarray] = {
-        sc.name: np.zeros(len(FEATURE_NAMES)) for sc in SUBCHALLENGES
-    }
+    sc_ig: dict[str, np.ndarray] = {sc.name: np.zeros(len(FEATURE_NAMES)) for sc in SUBCHALLENGES}
     sc_counts: dict[str, int] = {sc.name: 0 for sc in SUBCHALLENGES}
 
     encoder = model.encoder
@@ -163,9 +162,7 @@ def _feature_importance_ig(
             mean_ig = sc_ig[sc.name] / sc_counts[sc.name]
         else:
             mean_ig = np.zeros(len(FEATURE_NAMES))
-        ranked = sorted(
-            zip(FEATURE_NAMES, mean_ig.tolist()), key=lambda x: x[1], reverse=True
-        )
+        ranked = sorted(zip(FEATURE_NAMES, mean_ig.tolist()), key=lambda x: x[1], reverse=True)
         result[sc.name] = ranked[:10]
     return result
 
@@ -209,12 +206,14 @@ def _uncertainty_calibration(
             end = (q + 1) * n // 4
             chunk = pairs[start:end]
             if chunk:
-                quartiles.append({
-                    "quartile": q + 1,
-                    "mean_uncertainty": float(np.mean([p[0] for p in chunk])),
-                    "mean_score": float(np.mean([p[1] for p in chunk])),
-                    "n": len(chunk),
-                })
+                quartiles.append(
+                    {
+                        "quartile": q + 1,
+                        "mean_uncertainty": float(np.mean([p[0] for p in chunk])),
+                        "mean_score": float(np.mean([p[1] for p in chunk])),
+                        "n": len(chunk),
+                    }
+                )
         result[sc.name] = quartiles
     return result
 
@@ -239,7 +238,9 @@ def _format_report(data: dict) -> str:
         lines.append(f"  Final train loss:  {lc['final_train_loss']:.4f}")
         if lc["final_val_loss"] is not None:
             lines.append(f"  Final val loss:    {lc['final_val_loss']:.4f}")
-            lines.append(f"  Best val loss:     {lc['best_val_loss']:.4f} (epoch {lc['best_val_epoch']})")
+            lines.append(
+                f"  Best val loss:     {lc['best_val_loss']:.4f} (epoch {lc['best_val_epoch']})"
+            )
         lines.append("")
 
     # 2. Oracle regret
@@ -400,7 +401,9 @@ def main() -> None:
     # 7. Feature importance
     print(f"Computing feature importance ({args.n_ig_samples} samples)...")
     report["feature_importance"] = _feature_importance_ig(
-        model, test_corpus, n_samples=args.n_ig_samples,
+        model,
+        test_corpus,
+        n_samples=args.n_ig_samples,
     )
 
     # 8. Uncertainty calibration
